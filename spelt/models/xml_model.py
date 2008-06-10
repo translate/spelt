@@ -18,15 +18,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from lxml    import objectify
-from pan_app import _
+from id_manager import IDManager
+from lxml       import objectify
+from pan_app    import _
 
-class XMLModel(object):
+class XMLModel(IDManager):
     """
     This base-class of that provides common XML reading and writing methods.
 
     This class is only meant to be inherited from, but can conceivably be used
-    on its own (see test_xml_model)
+    on its own (see test_xml_model).
     """
 
     # CONSTRUCTORS #
@@ -41,6 +42,8 @@ class XMLModel(object):
             @param attribs:   A list of accepted attributes
             """
         assert isinstance(tag, str) and len(tag) > 0
+
+        super(XMLModel, self).__init__()
 
         self.tag       = tag
         self.values    = values
@@ -61,7 +64,12 @@ class XMLModel(object):
             raise InvalidElementException(_("The parameter element's tag is not valid for this model."))
 
         for at in self.attribs:
-            setattr(self, at, elem.get(at))
+            if at == 'id':
+                if self.id > 0:
+                    self.del_id(self.id)
+                self.id = int( elem.get('id') )
+            else:
+                setattr(self, at, elem.get(at))
 
         for v in self.values:
             try: elem_v = getattr(elem, v)
@@ -76,13 +84,18 @@ class XMLModel(object):
         self.validateData()
 
     def to_xml(self):
-        """Create an objectify.ObjectifiedElement from the model."""
+        """Create an objectify.ObjectifiedElement from the model.
+            @rtype:  objectify.Element
+            @return: The constructed XML element."""
         self.validateData()
 
         root = objectify.Element(self.tag)
 
         for at in self.attribs:
-            root.set(at, str(getattr(self, at)))
+            if at == 'id':
+                root.set('id', str(self.id))
+            else:
+                root.set(at, str(getattr(self, at)))
 
         for v in self.values:
             setattr(root, v, getattr(self, v))

@@ -27,13 +27,13 @@ class TestSurfaceForm(object):
     """Unit test for the SurfaceForm model class."""
 
     xml1 = StringIO("""
-        <surface_form user_id="1" date="123" source_id="11" root_id="111">
+        <surface_form id="10" user_id="1" date="123" source_id="11" root_id="111">
             <value>koeie</value>
             <status>classified</status>
         </surface_form>""")
 
     xml2 = StringIO("""
-        <surface_form user_id="2" date="321" source_id="22" root_id="222">
+        <surface_form id="20" user_id="2" date="321" source_id="22" root_id="222">
             <value>varkagtighede</value>
             <status>ignored</status>
         </surface_form>""")
@@ -46,10 +46,11 @@ class TestSurfaceForm(object):
         assert sf.value  == u'verkoeílikheid'
         assert sf.status == 'rejected'
 
-        sf = SurfaceForm('varkieş', 'todo', 3, datetime.fromtimestamp(0), 33, 333)
+        sf = SurfaceForm('varkieş', 'todo', 3, 30, datetime.fromtimestamp(0), 33, 333)
         assert unicode(sf.value, 'utf-8') == u'varkieş'
         assert sf.status    == 'todo'
-        assert sf.user_id   == 3
+        assert sf.id        == 3
+        assert sf.user_id   == 30
         assert sf.date      == "0"
         assert sf.source_id == 33
         assert sf.root_id   == 333

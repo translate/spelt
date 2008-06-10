@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 # -*- coding: utf-8 -*-
 #
 # Copyright 2008 Zuza Software Foundation
@@ -19,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-"""
-This module contains some common utility functions which can be used
-independently.
-"""
+from exceptions import *
+
+__all__ = [IDUsedError, UnknownIDError]

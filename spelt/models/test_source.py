@@ -50,13 +50,13 @@ class TestSource:
         XML attributes (first 3 arguments) only.
         """
         now = datetime.now()
-        s = Source(1, now, 2)
+        s = Source(id=101, date=now, import_user_id=2)
 
-        assert s.id == 1
+        assert s.id == 101
         assert s._date == now
         assert s.import_user_id == 2
-        assert s.name is None
-        assert s.filename is None
+        assert s.name == '<unknown>'
+        assert s.filename == ''
         assert s.description is None
 
     def test_create_no_xml_values(self):
@@ -66,9 +66,7 @@ class TestSource:
         """
         s = Source(name='New Source', filename='newsrc.txt', desc='This is the newest source!!!')
 
-        assert s.id is None
-        assert s.date is None
-        assert s.import_user_id is None
+        assert s.import_user_id == 0
         assert s.name == 'New Source'
         assert s.filename == 'newsrc.txt'
         assert s.description == 'This is the newest source!!!'
@@ -81,19 +79,19 @@ class TestSource:
         s1 = Source.create_from_elem(self.elem1)
         s2 = Source.create_from_elem(self.elem2)
 
-        assert s1.id == 1
-        assert s1.date == '1212555224'
-        assert s1.import_user_id == 4
         assert s1.name == 'Test Source 1'
         assert s1.filename == 'testsrc1.txt'
         assert s1.description == 'A fictitious source for testing purposes'
+        assert s1.id == 1
+        assert s1.date == '1212555224'
+        assert s1.import_user_id == 4
 
-        assert s2.id == 2
-        assert s2.date == '1212555925'
-        assert s2.import_user_id == 2
         assert s2.name == 'Test Source 2'
         assert s2.filename == 'testsrc2.txt'
         assert s2.description == 'Another fictitious source for testing purposes'
+        assert s2.id == 2
+        assert s2.date == '1212555925'
+        assert s2.import_user_id == 2
 
     def test_to_xml(self):
         s = Source.create_from_elem(self.elem1)

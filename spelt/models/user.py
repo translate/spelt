@@ -18,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from common    import *
 from lxml      import objectify
 from xml_model import XMLModel
 
@@ -28,37 +27,22 @@ class User(XMLModel):
     """
 
     # CONSTRUCTORS #
-    def __init__(self, id=None, name=None):
+    def __init__(self, name='<unknown>', id=0):
         """Constructor.
-            @type  id: int
-            @param id: The user's unique identifier (default None)
             @type  name: basestring
             @param name: User's name (default None)
+            @type  id: int
+            @param id: The user's unique identifier (default None)
             """
-        assert id is None   or isinstance(id, int)
-        assert name is None or isinstance(name, basestring)
+        assert isinstance(name, basestring)
+        assert isinstance(id, int)
 
         super(User, self).__init__(tag='user', values=['name'], attribs=['id'])
-        self.id, self.name = id, name
 
-        if not self.id:
-            self.id = 0 # FIXME: Should this find an appropriate ID?
-
-        if not self.name:
-            self.name = '<unknown>'
+        self.id   = id
+        self.name = name
 
     # METHODS #
-    def from_xml(self, elem):
-        """
-        Calls XMLModel.from_xml(elem) and then converts the 'id' members to int.
-        """
-        try: super(User, self).from_xml(elem)
-        except AssertionError:
-            pass
-
-        self.id = int(self.id)
-        self.validateData()
-
     def validateData(self):
         """See XMLModel.validateData()."""
         assert isinstance(self.id, int)
@@ -77,3 +61,10 @@ class User(XMLModel):
         u = User()
         u.from_xml(elem)
         return u
+
+    # SPECIAL METHODS #
+    def __eq__(self, rhs):
+        return self.id == rhs.id
+
+    def __hash__(self):
+        return self.id

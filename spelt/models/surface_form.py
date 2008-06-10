@@ -19,7 +19,6 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import time
-from common    import *
 from datetime  import datetime
 from lxml      import objectify
 from xml_model import XMLModel
@@ -43,25 +42,27 @@ class SurfaceForm(XMLModel):
     date = property( _get_date, _set_date, (lambda self: delattr(self, '_date')) )
 
     # CONSTRUCTORS #
-    def __init__(self, value='', status='', user_id=0, date=None, source_id=0, root_id=0):
+    def __init__(self, value='', status='', id=0, user_id=0, date=None, source_id=0, root_id=0):
         """
         Constructor.
-
-        @type  value:     basestring
-        @param value:     The surface form word.
-        @type  status:    str
-        @param status:    The classification status of the surface form word.
-        @type  user_id:   int
-        @param user_id:   The user that classified the word.
-        @type  date:      datetime.datetime
-        @param date:      Date of classification.
-        @type  source_id: int
-        @param source_id: Source associated with this word.
-        @type  root_id:   int
-        @param root_id:   ID of the root word for this structure.
-        """
+            @type  value:     basestring
+            @param value:     The surface form word.
+            @type  id:        int
+            @param id:        A unique identifier for the instance.
+            @type  status:    str
+            @param status:    The classification status of the surface form word.
+            @type  user_id:   int
+            @param user_id:   The user that classified the word.
+            @type  date:      datetime.datetime
+            @param date:      Date of classification.
+            @type  source_id: int
+            @param source_id: Source associated with this word.
+            @type  root_id:   int
+            @param root_id:   ID of the root word for this structure.
+            """
         assert isinstance(value, basestring)
         assert isinstance(status, str)
+        assert isinstance(id, int)
         assert isinstance(user_id, int)
         assert date is None or isinstance(date, datetime)
         assert isinstance(source_id, int)
@@ -70,14 +71,15 @@ class SurfaceForm(XMLModel):
         super(SurfaceForm, self).__init__(
             tag='surface_form',
             values=['value', 'status'],
-            attribs=['user_id', 'date', 'source_id', 'root_id']
+            attribs=['id', 'user_id', 'date', 'source_id', 'root_id']
         )
 
         if date is None:
-            self.date = datetime.fromtimestamp(0)
+            self.date = datetime.now()
 
         self.value     = value
         self.status    = status
+        self.id        = id
         self.user_id   = user_id
         self.date      = date
         self.source_id = source_id
@@ -103,6 +105,7 @@ class SurfaceForm(XMLModel):
         """See XMLModel.validateData()."""
         assert isinstance(unicode(self.value), basestring) and len(unicode(self.value)) > 0
         assert isinstance(str(self.status), str)           and self.status in VALID_STATUSES
+        assert isinstance(self.id, int)                    and self.id > 0
         assert isinstance(self.user_id, int)               and self.user_id > 0
         assert isinstance(self._date, datetime)
         assert isinstance(self.source_id, int)
@@ -120,3 +123,10 @@ class SurfaceForm(XMLModel):
         sf = SurfaceForm()
         sf.from_xml(elem)
         return sf
+
+    # SPECIAL METHODS #
+    def __eq__(self, rhs):
+        return self.value == rhs.value and self.root_id == rhs.root_id
+
+    def __hash__(self):
+        return self.id

@@ -18,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from common    import *
 from lxml      import objectify
 from xml_model import XMLModel
 
@@ -50,10 +49,10 @@ class PartOfSpeech(XMLModel):
             attribs=['id']
         )
 
-        self.name = name
+        self.name     = name
         self.shortcut = shortcut
-        self.remarks = remarks
-        self.id = id
+        self.remarks  = remarks
+        self.id       = id
 
     # METHODS #
     def from_xml(self, elem):
@@ -64,7 +63,6 @@ class PartOfSpeech(XMLModel):
         except AssertionError:
             pass
 
-        self.id = int(self.id)
         self.validateData()
 
     def validateData(self):
@@ -86,3 +84,10 @@ class PartOfSpeech(XMLModel):
         pos = PartOfSpeech()
         pos.from_xml(elem)
         return pos
+
+    # SPECIAL METHODS #
+    def __eq__(self, rhs):
+        return self.id == rhs.id
+
+    def __hash__(self):
+        return self.id

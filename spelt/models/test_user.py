@@ -39,12 +39,12 @@ class TestUser:
         """
         Test creation of a simple User object with its own constructor.
         """
-        u = User(id=5)
-        assert u.id == 5
-        u = User(id=0, name=u'Unicode Náme')
+        u = User(id=1)
+        assert u.id == 1
+        u = User(id=2, name=u'Unicode Náme')
         assert u.name == u'Unicode Náme'
-        u = User(5, 'ASCII Name')
-        assert u.id == 5 and u.name == 'ASCII Name'
+        u = User('ASCII Name', 3)
+        assert u.id == 3 and u.name == 'ASCII Name'
 
     def test_create_from_xml(self):
         """

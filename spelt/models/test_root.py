@@ -43,9 +43,10 @@ class TestRoot:
         Test creation of a simple Root object with its own constructor.
         """
         r = Root()
+        # r.id not tested because it should be automagically determined by
+        # the voodoo in IDManager
         assert r.value   == ''
         assert r.remarks is None
-        assert r.id      == 0
         assert r.pos_id  == 0
         assert r.user_id == 0
         assert r.date    == str(int( time.mktime(datetime.now().timetuple()) ))

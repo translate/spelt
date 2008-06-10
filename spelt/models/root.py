@@ -90,7 +90,6 @@ class Root(XMLModel):
         except AssertionError:
             pass
 
-        self.id = int(self.id)
         self.pos_id = int(self.pos_id)
         self.user_id = int(self.user_id)
 
@@ -118,3 +117,10 @@ class Root(XMLModel):
         r = Root()
         r.from_xml(elem)
         return r
+
+    # SPECIAL METHODS #
+    def __eq__(self, rhs):
+        return self.id == rhs.id
+
+    def __hash__(self):
+        return self.id
