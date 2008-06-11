@@ -20,5 +20,33 @@
 
 """All exceptions used in Spelt."""
 
-class IDUsedError(StandardError): pass
-class UnknownIDError(StandardError): pass
+# Model-related exceptions
+class DuplicateModelException(StandardError):
+    """Raised if a model with the same ID as another is found."""
+    pass
+
+class IDUsedError(StandardError):
+    """Raised when a strict ID is requested by a model, but already taken."""
+    pass
+
+class InvalidElementException(StandardError):
+    """Thrown by an XMLModel when an attempt is made to use an invalid element
+    to in its from_xml() method."""
+    pass
+
+class LanguageDBFormatError(StandardError):
+    """There is something wrong with a language database's format."""
+    pass
+
+class LanguageDBFormatWarning(UserWarning):
+    """Warning raised when a non-critical language database formatting issue is
+    found. Such as no /language_database/users/* (XPath) path found."""
+    pass
+
+class UnknownIDError(StandardError):
+    """Raised when an unclaimed ID is being deleted."""
+    pass
+
+class UnknownModelError(StandardError):
+    """Raised when an unknown model was specified somewhere."""
+    pass

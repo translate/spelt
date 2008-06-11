@@ -26,18 +26,18 @@ class TestPartOfSpeech(object):
     """Unit test for the PartOfSpeech model class."""
 
     xml1 = StringIO("""
-        <partOfSpeech id="1">
+        <part_of_speech id="1">
             <shortcut>n1</shortcut>
             <name>Noun, ôrdinary</name>
             <remarks>Examples include "hond", "boom" and "appel"</remarks>
-        </partOfSpeech>""")
+        </part_of_speech>""")
 
     xml2 = StringIO("""
-        <partOfSpeech id="2">
+        <part_of_speech id="2">
             <shortcut>v1sp</shortcut>
             <name>Verb, 1st person singular, present tense</name>
             <remarks></remarks>
-        </partOfSpeech>""")
+        </part_of_speech>""")
 
     def test_create_no_xml(self):
         """

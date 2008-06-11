@@ -44,7 +44,7 @@ class PartOfSpeech(XMLModel):
         assert isinstance(id, int)
 
         super(PartOfSpeech, self).__init__(
-            tag='partOfSpeech',
+            tag='part_of_speech',
             values=['name', 'shortcut', 'remarks'],
             attribs=['id']
         )
@@ -74,8 +74,8 @@ class PartOfSpeech(XMLModel):
     # CLASS/STATIC METHODS #
     @staticmethod
     def create_from_elem(elem):
-        """Factory method to create a PartOfSpeech object from a obj.ObjectifiedElement.
-            @type  elem: objectify.ObjectifiedElement
+        """Factory method to create a PartOfSpeech object from a lxml.objectify.ObjectifiedElement.
+            @type  elem: lxml.objectify.ObjectifiedElement
             @param elem: The element to read XML information from.
             @rtype:      PartOfSpeech
             @return:     An instance containing the data loaded from elem.

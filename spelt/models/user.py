@@ -19,6 +19,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from lxml      import objectify
+
 from xml_model import XMLModel
 
 class User(XMLModel):
@@ -52,7 +53,7 @@ class User(XMLModel):
     @staticmethod
     def create_from_elem(elem):
         """Factory method to create a User object from a obj.ObjectifiedElement.
-            @type  elem: objectify.ObjectifiedElement
+            @type  elem: lxml.objectify.ObjectifiedElement
             @param elem: The element to read XML information from.
             @rtype:      User
             @return:     An instance containing the data loaded from elem.

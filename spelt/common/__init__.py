@@ -20,4 +20,12 @@
 
 from exceptions import *
 
-__all__ = [IDUsedError, UnknownIDError]
+__all__ = [
+    'DuplicateModelException',
+    'IDUsedError',
+    'InvalidElementException',
+    'LanguageDBFormatError',
+    'LanguageDBFormatWarning',
+    'UnknownIDError',
+    'UnknownModelError'
+]

@@ -18,11 +18,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from langdb import LanguageDB
-from pos import PartOfSpeech
-from root import Root
-from source import Source
-from surface_form import SurfaceForm
-from user import User
+from langdb        import LanguageDB
+from model_factory import ModelFactory
+from pos           import PartOfSpeech
+from root          import Root
+from source        import Source
+from surface_form  import SurfaceForm
+from user          import User
+from xml_model     import XMLModel
 
-__all__ = [ LanguageDB, PartOfSpeech, Root, Source, SurfaceForm, User ]
+__all__ = [
+    'LanguageDB',
+    'ModelFactory',
+    'PartOfSpeech',
+    'Root',
+    'Source',
+    'SurfaceForm',
+    'User',
+    'XMLModel'
+]

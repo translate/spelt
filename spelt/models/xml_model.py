@@ -18,8 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from id_manager import IDManager
 from lxml       import objectify
+
+from common     import exceptions
+from id_manager import IDManager
 from pan_app    import _
 
 class XMLModel(IDManager):
@@ -51,17 +53,18 @@ class XMLModel(IDManager):
 
     # METHODS #
     def from_xml(self, elem):
-        """Read data from the given objectify.ObjectifiedElement element.
+        """Read data from the given lxml.objectify.ObjectifiedElement element.
             NOTE: Using this method will _not_ preserve any undeclared information.
             NOTE: Attributes are always saved as strings
 
-            @type  elem: objectify.ObjectifiedElement
+            @type  elem: lxml.objectify.ObjectifiedElement
             @param elem: The element to read data from.
             """
         assert elem and isinstance(elem, objectify.ObjectifiedElement)
 
         if elem.tag != self.tag:
-            raise InvalidElementException(_("The parameter element's tag is not valid for this model."))
+            print 'self.tag, elem.tag => %s, %s' % (self.tag, elem.tag)
+            raise exceptions.InvalidElementException(_("The parameter element's tag is not valid for this model."))
 
         for at in self.attribs:
             if at == 'id':
@@ -84,7 +87,7 @@ class XMLModel(IDManager):
         self.validateData()
 
     def to_xml(self):
-        """Create an objectify.ObjectifiedElement from the model.
+        """Create an lxml.objectify.ObjectifiedElement from the model.
             @rtype:  objectify.Element
             @return: The constructed XML element."""
         self.validateData()
@@ -119,3 +122,16 @@ class XMLModel(IDManager):
         It should throw an exception if validation fails.
         """
         pass
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return '%s(tag="%s")[%s][%s]' % (
+            self.__class__.__name__, self.tag,
+            ','.join([( '@%s="%s"' % (a, str(getattr(self, a))) ) for a in self.attribs]),
+            # Choose one of the two lines below, but not both. The first line
+            # produces less verbose results than the second...
+            ','.join([v for v in self.values])
+            #','.join([( '%s="%s"' % (v, repr(getattr(self, v))) ) for v in self.values])
+        )

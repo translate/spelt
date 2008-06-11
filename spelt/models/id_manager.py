@@ -63,21 +63,21 @@ class IDManager(object):
                 excepted. If the requested ID is already used, a IDUsedError
                 is raised. (Default: True)
             """
-        print '%s(%d).ids = %s (req %d)' % (cls.__name__, cls.max_id, str(cls.ids), requested)
+        #print '%s(%d).ids = %s (req %d)' % (cls.__name__, cls.max_id, str(cls.ids), requested)
 
         if not requested is None and requested > 0:
             if requested not in cls.ids:
                 if requested > cls.max_id:
                     cls.max_id = requested
                 cls.ids.append(requested)
-                print '%s(%d) <= %d' % (cls.__name__, cls.max_id, requested)
+                #print '%s(%d) <= %d' % (cls.__name__, cls.max_id, requested)
                 return requested
             elif req_only:
                 raise IDUsedError(str(requested))
 
         cls.max_id += 1
         cls.ids.append(cls.max_id)
-        print '%s(%d) <= *%d' % (cls.__name__, cls.max_id, cls.max_id)
+        #print '%s(%d) <= *%d' % (cls.__name__, cls.max_id, cls.max_id)
         return cls.max_id
 
     @classmethod

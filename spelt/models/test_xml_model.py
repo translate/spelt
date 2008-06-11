@@ -51,7 +51,7 @@ class TestXMLModel:
     def test_to_xml(self):
         """
         Test that XMLModel.to_xml() works by comparing the source
-        objectify.ObjectifiedElement used to create a XMLModel and the element
+        lxml.objectify.ObjectifiedElement used to create a XMLModel and the element
         returned by to_xml().
         """
         fromroot = objectify.parse(TestXMLModel.xml).getroot()

@@ -107,8 +107,8 @@ class Root(XMLModel):
     # CLASS/STATIC METHODS #
     @staticmethod
     def create_from_elem(elem):
-        """Factory method to create a Root object from a objectify.ObjectifiedElement.
-            @type  elem: objectify.ObjectifiedElement
+        """Factory method to create a Root object from a lxml.objectify.ObjectifiedElement.
+            @type  elem: lxml.objectify.ObjectifiedElement
             @param elem: The element to read XML information from.
             @rtype:      Root
             @return:     An instance containing the data loaded from elem.

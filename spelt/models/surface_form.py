@@ -96,8 +96,10 @@ class SurfaceForm(XMLModel):
             pass
 
         self.user_id   = int(self.user_id)
-        self.source_id = int(self.source_id)
-        self.root_id   = int(self.root_id)
+        if self.source_id:
+            self.source_id = int(self.source_id)
+        if self.root_id:
+            self.root_id   = int(self.root_id)
 
         self.validateData()
 
@@ -113,8 +115,8 @@ class SurfaceForm(XMLModel):
     # CLASS/STATIC METHODS #
     @staticmethod
     def create_from_elem(elem):
-        """Factory method to create a Source object from an objectify.ObjectifiedElement.
-            @type  elem: objectify.ObjectifiedElement
+        """Factory method to create a Source object from an lxml.objectify.ObjectifiedElement.
+            @type  elem: lxml.objectify.ObjectifiedElement
             @param elem: The element to read XML information from.
             @rtype:      SurfaceForm
             @return:     An instance containing the data loaded from elem.

@@ -18,31 +18,60 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-# Contains LanguageDB: the main model representing a language database and provides access to all its parts.
+"""Contains LanguageDB: the main model representing a language database and provides access to all its parts."""
 
 import os.path
-from lxml         import objectify
-from pan_app      import _
-from pos          import PartOfSpeech
-from root         import Root
-from source       import Source
-from surface_form import SurfaceForm
-from user         import User
+from lxml          import etree, objectify
+
+
+from common        import *
+from pan_app       import _
+
+from model_factory import ModelFactory
+from pos           import PartOfSpeech
+from root          import Root
+from source        import Source
+from surface_form  import SurfaceForm
+from user          import User
 
 class LanguageDB(object):
     """
     This class represents and manages a XML language database.
     """
 
+    model_list_map = {
+        'part_of_speech' : 'parts_of_speech',
+        'root'           : 'roots',
+        'source'         : 'sources',
+        'surface_form'   : 'surface_forms',
+        'user'           : 'users'
+    }
+    """Maps models' XML tags to the name of the list that contains all instances of a certain model type.
+    More simply it can also be seen as a singular-to-plural map of the sections."""
+
+    # ACCESSORS #
+    parts_of_speech = property(lambda self: self.sections['parts_of_speech'])
+    roots =           property(lambda self: self.sections['roots'])
+    sources =         property(lambda self: self.sections['sources'])
+    surface_forms =   property(lambda self: self.sections['surface_forms'])
+    users =           property(lambda self: self.sections['users'])
+
     # CONSTRUCTOR #
-    def __init__(self, lang=None):
+    # TODO: Use file object instead of forcing opening from filename
+    def __init__(self, lang=None, filename=None):
         """Constructor.
             @type  lang: str
             @param lang: ISO 639 language code.
             """
+        self.filename = None
         self.lang = lang
-        self.parts_of_speech, self.roots, self.sources, self.surface_forms, self.users = [], [], [], [], []
-        self.__createRoot()
+        self.sections = dict(zip( model_list_map.values(), map(lambda x: [], model_list_map.values()) ))
+
+        if not filename is None and os.path.exists(filename):
+            self.load(filename)
+
+        if not self.filename:
+            self.__create_root()
 
     # METHODS #
     def add_part_of_speech(self, pos):
@@ -62,7 +91,6 @@ class LanguageDB(object):
             @type  root: Root
             @param root: The word root model to add to the database.
             """
-        assert isinstance(root, Root)
         if root in self.roots:
             raise 'Root already in database!'
 
@@ -93,17 +121,19 @@ class LanguageDB(object):
         self.surface_forms.append(sf)
         self.xmlroot.surface_forms.append(sf.to_xml())
 
-    def add_user(self, user):
+    def add_user(self, usr):
         """Add a user to the database.
-            @type  user: User
-            @param user: The user model to add to the database.
+            @type  usr: User
+            @param usr: The user model to add to the database.
             """
-        assert isinstance(user, User)
-        if user in self.users:
+        print 'usr:  [class: %s][module: %s][ids: %s]' % (usr.__class__.__name__, usr.__module__, usr.__class__.ids)
+        print 'User: [class: %s][module: %s][ids: %s]' % (User.__name__, User.__module__, User.ids)
+        assert isinstance(usr, User)
+        if usr in self.users:
             raise 'User already in database!'
 
-        self.users.append(user)
-        self.xmlroot.users.append(user.to_xml())
+        self.users.append(usr)
+        self.xmlroot.users.append(usr.to_xml())
 
     def __create_root(self):
         self.xmlroot                 = objectify.Element('language_database', lang=self.lang)
@@ -113,14 +143,75 @@ class LanguageDB(object):
         self.xmlroot.surface_forms   = objectify.Element('surface_forms')
         self.xmlroot.users           = objectify.Element('users')
 
+    def find(self, id=0, section=None, **kwargs):
+        """A generic method to find any of the models contained in the current language database.
+            If kwargs are specified, a model will match if ANY of the paris match.
+            @type  id:      int
+            @param id:      The unique ID for the model to find. (Default: 0 - won't find anything)
+            @type  section: str
+            @param section: The section (or type of model) to find. One of
+                model_list_map.values(). (Default: None)
+            @param kwargs:  Other arbitrary attributes to search on. Eg. find(name='Foo')
+            @rtype:         list
+            @return:        A list of matching models.
+            """
+        assert id is None or isinstance(id, int)
+
+        if not section is None and section not in self.model_list_map.values():
+            section=None
+
+        sections = section and [getattr(self, section)] or [getattr(self, s) for s in self.model_list_map.values()]
+        models = []
+
+        for sec in sections:
+            for model in sec:
+                if model.id == id:
+                    models.append(model)
+                elif kwargs:
+                    match = True
+                    for key, val in kwargs.items():
+                        if not (hasattr(model, key) and getattr(model, key) == val):
+                            match = False
+                            break
+
+                    if match:
+                        models.append(model)
+
+        return models
+
     def load(self, filename='lang.xldb'):
         """Load a language database from the specified file.
             @type  filename: basestring
             @param filename: The full path to the file to load the language database from.
             """
-        # TODO: Check that file exists
-        self.xmlroot = objectify.parse(open(filename, 'r')).getroot()
+        xmlroot = objectify.parse(open(filename, 'r')).getroot()
+
+        # Sanity checking for basic language database structure...
+        if xmlroot.tag != 'language_database':
+            raise LanguageDBFormatError('Invalid root tag: %s' % xmlroot.tag, self)
+
+        if 'lang' not in xmlroot.keys():
+            print xmlroot.keys()
+            raise LanguageDBFormatError('No language code specified!', self)
+
         self.filename = filename
+        self.lang     = xmlroot.get('lang')
+        self.xmlroot  = xmlroot
+
+        root_children = [c.tag for c in xmlroot.iterchildren()]
+        for section in self.model_list_map.values():
+            if section not in root_children:
+                setattr(xmlroot, section, objectify.Element(section))
+                raise LanguageDBFormatWarning('No top-level "%s" tag.' % section)
+            else:
+                for child in getattr(xmlroot, section).iterchildren():
+                    model = ModelFactory.create_model_from_elem(child)
+                    mlist = getattr(self, self.model_list_map[model.tag])
+
+                    if model in mlist:
+                        raise DuplicateModelException(str(model))
+
+                    mlist.append(model)
 
     def save(self, filename=None):
         """Save the represented language database to the specified file.
@@ -134,5 +225,26 @@ class LanguageDB(object):
             raise 'Invalid filename!'
 
         f = open(filename, 'w')
-        print >> f, etree.tostring(pretty_print=True)
+        # FIXME: Find a way to make deannotate() below actually remove those
+        # annoying pytype and xsi attribs.
+        objectify.deannotate(self.xmlroot)
+        print >> f, etree.tostring(
+            self.xmlroot,
+            pretty_print=True,
+            xml_declaration=True,
+            encoding='utf-8'
+        )
         f.close()
+
+    # SPECIAL METHODS #
+    def __str__(self):
+        filepart = self.filename and '[file="%s"]' % self.filename or '[no file]'
+        return '%s[lang="%s"]%s[POS %d|R %d|SRC %d|SF %d|U %d]' % \
+            (
+                self.__class__.__name__, self.lang, filepart,
+                len(self.parts_of_speech),
+                len(self.roots),
+                len(self.sources),
+                len(self.surface_forms),
+                len(self.users)
+            )
