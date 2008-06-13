@@ -40,8 +40,8 @@ class User(XMLModel):
 
         super(User, self).__init__(tag='user', values=['name'], attribs=['id'])
 
-        self.id   = id
         self.name = name
+        self.id   = id
 
     # METHODS #
     def validateData(self):

@@ -18,18 +18,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from config     import Configuration
-from exceptions import *
-from pan_app    import _
+import gtk
 
-__all__ = [
-    '_',
-    'Configuration',
-    'DuplicateModelError',
-    'IDUsedError',
-    'InvalidElementError',
-    'LanguageDBFormatError',
-    'LanguageDBFormatWarning',
-    'UnknownIDError',
-    'UnknownModelError'
-]
+from common import Configuration
+from gui    import GUI
+
+global config
+config = Configuration()
+
+def main():
+    GUI()
+    gtk.main()
+
+if __name__ == '__main__':
+    main()

@@ -18,18 +18,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from config     import Configuration
-from exceptions import *
-from pan_app    import _
+"""Contains the Configuration class."""
 
-__all__ = [
-    '_',
-    'Configuration',
-    'DuplicateModelError',
-    'IDUsedError',
-    'InvalidElementError',
-    'LanguageDBFormatError',
-    'LanguageDBFormatWarning',
-    'UnknownIDError',
-    'UnknownModelError'
-]
+from singleton import SingletonMeta
+
+class Configuration(object):
+    """Singleton access to the program's configuration."""
+
+    __metaclass__ = SingletonMeta # Make this a Singleton class
+
+    def __init__(self, configFilename='config.prefs'):
+        self.options = {}
+
+    def __str__(self):
+        return '%s(%s)' % (self.__class__.__name__, self.options)

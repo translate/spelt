@@ -20,9 +20,8 @@
 
 from lxml       import objectify
 
-from common     import exceptions
+from common     import exceptions, _
 from id_manager import IDManager
-from pan_app    import _
 
 class XMLModel(IDManager):
     """
@@ -64,7 +63,7 @@ class XMLModel(IDManager):
 
         if elem.tag != self.tag:
             print 'self.tag, elem.tag => %s, %s' % (self.tag, elem.tag)
-            raise exceptions.InvalidElementException(_("The parameter element's tag is not valid for this model."))
+            raise exceptions.InvalidElementError(_("The parameter element's tag is not valid for this model."))
 
         for at in self.attribs:
             if at == 'id':
@@ -127,11 +126,15 @@ class XMLModel(IDManager):
         return str(self)
 
     def __str__(self):
-        return '%s(tag="%s")[%s][%s]' % (
-            self.__class__.__name__, self.tag,
-            ','.join([( '@%s="%s"' % (a, str(getattr(self, a))) ) for a in self.attribs]),
-            # Choose one of the two lines below, but not both. The first line
-            # produces less verbose results than the second...
-            ','.join([v for v in self.values])
-            #','.join([( '%s="%s"' % (v, repr(getattr(self, v))) ) for v in self.values])
+        #return '<%s[%s][%s]>' % (
+        #    self.__class__.__name__,
+        #    ','.join([( '@%s="%s"' % (a, str(getattr(self, a))) ) for a in self.attribs]),
+        #    # Choose one of the two lines below, but not both. The first line
+        #    # produces less verbose results than the second...
+        #    #','.join([v for v in self.values])
+        #    ','.join([( '%s="%s"' % (v, repr(getattr(self, v))) ) for v in self.values])
+        #)
+        return '<%s(id=%d)[%s]>' % (
+            self.__class__.__name__, self.id,
+            ','.join([( '%s="%s"' % (v, repr(getattr(self, v))) ) for v in self.values])
         )

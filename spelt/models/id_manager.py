@@ -35,20 +35,26 @@ class IDManager(object):
 
     # ACCESSORS #
     def _set_id(self, v):
+        before_id = self._id
         if self._id > 0:
-            self.del_id(self._id)
-        self._id = self.__class__.get_id(v)
+            self.__class__.del_id(self._id)
+            self._id = self.__class__.get_id(v)
+        else:
+            self._id = self.__class__.get_id(v, strict=False)
+        print '%s(%s) %d -> %d' % (self, self.__class__.ids, before_id, self._id)
 
     id = property(lambda self: self._id, _set_id)
 
     # CONSTRUCTOR #
     def __init__(self):
-        self.__class__.ids = []
-        self.__class__.max_id = 0
+        if not hasattr(self.__class__, 'ids'):
+            self.__class__.ids = []
+        if not hasattr(self.__class__, 'max_id'):
+            self.__class__.max_id = 0
         self._id = 0
 
     def __del__(self):
-        self.del_id(self._id)
+        self.__class__.del_id(self._id)
 
     # CLASS/STATIC METHODS #
     @classmethod
@@ -72,7 +78,7 @@ class IDManager(object):
                 cls.ids.append(requested)
                 #print '%s(%d) <= %d' % (cls.__name__, cls.max_id, requested)
                 return requested
-            elif req_only:
+            elif strict:
                 raise IDUsedError(str(requested))
 
         cls.max_id += 1

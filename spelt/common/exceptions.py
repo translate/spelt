@@ -21,7 +21,7 @@
 """All exceptions used in Spelt."""
 
 # Model-related exceptions
-class DuplicateModelException(StandardError):
+class DuplicateModelError(StandardError):
     """Raised if a model with the same ID as another is found."""
     pass
 
@@ -29,7 +29,7 @@ class IDUsedError(StandardError):
     """Raised when a strict ID is requested by a model, but already taken."""
     pass
 
-class InvalidElementException(StandardError):
+class InvalidElementError(StandardError):
     """Thrown by an XMLModel when an attempt is made to use an invalid element
     to in its from_xml() method."""
     pass

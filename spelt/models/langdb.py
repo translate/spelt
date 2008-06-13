@@ -23,9 +23,7 @@
 import os.path
 from lxml          import etree, objectify
 
-
 from common        import *
-from pan_app       import _
 
 from model_factory import ModelFactory
 from pos           import PartOfSpeech
@@ -38,6 +36,8 @@ class LanguageDB(object):
     """
     This class represents and manages a XML language database.
     """
+
+    FILE_EXTENSION = 'xldb' # The normal extension of language database files.
 
     model_list_map = {
         'part_of_speech' : 'parts_of_speech',
@@ -65,7 +65,7 @@ class LanguageDB(object):
             """
         self.filename = None
         self.lang = lang
-        self.sections = dict(zip( model_list_map.values(), map(lambda x: [], model_list_map.values()) ))
+        self.sections = dict(zip( self.model_list_map.values(), map(lambda x: [], self.model_list_map.values()) ))
 
         if not filename is None and os.path.exists(filename):
             self.load(filename)
@@ -81,7 +81,7 @@ class LanguageDB(object):
             """
         assert isinstance(pos, PartOfSpeech)
         if pos in self.parts_of_speech:
-            raise 'PartOfSpeach already in database!'
+            raise DuplicateModelError(str(pos))
 
         self.parts_of_speech.append(pos)
         self.xmlroot.parts_of_speech.append(pos.to_xml())
@@ -92,7 +92,7 @@ class LanguageDB(object):
             @param root: The word root model to add to the database.
             """
         if root in self.roots:
-            raise 'Root already in database!'
+            raise DuplicateModelError(str(root))
 
         self.roots.append(root)
         self.xmlroot.roots.append(root.to_xml())
@@ -104,7 +104,7 @@ class LanguageDB(object):
             """
         assert isinstance(src, Source)
         if src in self.sources:
-            raise 'Source already in database!'
+            raise DuplicateModelError(str(src))
 
         self.sources.append(src)
         self.xmlroot.sources.append(src.to_xml())
@@ -116,7 +116,7 @@ class LanguageDB(object):
             """
         assert isinstance(sf, SurfaceForm)
         if sf in self.surface_forms:
-            raise 'SurfaceForm already in database!'
+            raise DuplicateModelError(str(sf))
 
         self.surface_forms.append(sf)
         self.xmlroot.surface_forms.append(sf.to_xml())
@@ -126,11 +126,9 @@ class LanguageDB(object):
             @type  usr: User
             @param usr: The user model to add to the database.
             """
-        print 'usr:  [class: %s][module: %s][ids: %s]' % (usr.__class__.__name__, usr.__module__, usr.__class__.ids)
-        print 'User: [class: %s][module: %s][ids: %s]' % (User.__name__, User.__module__, User.ids)
         assert isinstance(usr, User)
         if usr in self.users:
-            raise 'User already in database!'
+            raise DuplicateModelError(str(usr))
 
         self.users.append(usr)
         self.xmlroot.users.append(usr.to_xml())
@@ -179,7 +177,7 @@ class LanguageDB(object):
 
         return models
 
-    def load(self, filename='lang.xldb'):
+    def load(self, filename='lang.'+FILE_EXTENSION):
         """Load a language database from the specified file.
             @type  filename: basestring
             @param filename: The full path to the file to load the language database from.
@@ -188,7 +186,7 @@ class LanguageDB(object):
 
         # Sanity checking for basic language database structure...
         if xmlroot.tag != 'language_database':
-            raise LanguageDBFormatError('Invalid root tag: %s' % xmlroot.tag, self)
+            raise LanguageDBFormatError(_('Invalid root tag: %s' % xmlroot.tag, self))
 
         if 'lang' not in xmlroot.keys():
             print xmlroot.keys()
@@ -209,7 +207,7 @@ class LanguageDB(object):
                     mlist = getattr(self, self.model_list_map[model.tag])
 
                     if model in mlist:
-                        raise DuplicateModelException(str(model))
+                        raise DuplicateModelError(str(model))
 
                     mlist.append(model)
 
@@ -222,7 +220,7 @@ class LanguageDB(object):
             filename = self.filename
 
         if filename is None:
-            raise 'Invalid filename!'
+            raise IOError('No filename given!')
 
         f = open(filename, 'w')
         # FIXME: Find a way to make deannotate() below actually remove those
@@ -235,6 +233,8 @@ class LanguageDB(object):
             encoding='utf-8'
         )
         f.close()
+
+        self.filename = filename
 
     # SPECIAL METHODS #
     def __str__(self):
