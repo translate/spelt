@@ -32,24 +32,29 @@ class EditArea(object):
     """
 
     # CONSTRUCTOR #
-    def __init__(self, glade_xml, word_list, langdb=None, gui=None):
+    def __init__(self, glade_xml, wordlist, langdb=None, gui=None):
         """Constructor.
             @type  glade_xml: gtk.glade.XML
             @param glade_xml: The Glade XML object to load widgets from.
             """
         assert isinstance(glade_xml, gtk.glade.XML)
-        assert isinstance(word_list, WordList)
+        assert isinstance(wordlist, WordList)
 
         self.current_sf = None
         self.glade_xml  = glade_xml
         self.gui        = gui
         self.langdb     = langdb
-        self.word_list  = word_list
-        self.word_list.word_selected_handlers.append(self.on_surface_form_selected)
+        self.wordlist   = wordlist
+        self.wordlist.word_selected_handlers.append(self.on_surface_form_selected)
         self.__init_widgets()
 
     # METHODS #
     def on_surface_form_selected(self, sf):
+        """A proxied event handler for when a surface form is selected in the
+            word list.
+
+            See the documentation of spelt.gui.WordList.word_selected_handlers for
+            the use of this method."""
         self.current_sf = sf
         self.lbl_word.set_markup('<b>%s</b>' % sf.value)
 
@@ -120,6 +125,15 @@ class EditArea(object):
         while self.root_store.iter_is_valid(iter):
             if self.root_store.get_value(iter, COL_MODEL) == root:
                 self.cmb_root.set_active_iter(iter)
+
+                pos_found = self.langdb.find(id=root.pos_id, section='parts_of_speech')
+                # The pos_found list can have a maximum of 1 element, because we
+                # search the database on ID's. ID's are guaranteed to be unique by the
+                # models (via it's inheritence of IDModel).
+                if pos_found:
+                    self.select_pos(pos_found[0])
+                else:
+                    raise exceptions.PartOfSpeechError(_( 'No part of speech found with ID %d' % (root.pos_id) ))
                 break
 
             iter = self.root_store.iter_next(iter)
@@ -148,6 +162,7 @@ class EditArea(object):
             'btn_reject',
             'cmb_root',
             'cmb_pos',
+            'btn_ok',
             'btn_add_root',
             'btn_mod_root'
         )
@@ -165,7 +180,6 @@ class EditArea(object):
         self.cmb_pos.add_attribute(pos_cell, 'text', COL_TEXT)
         self.cmb_pos.set_model(self.pos_store)
         self.cmb_pos.set_text_column(COL_TEXT)
-        self.cmb_pos.connect('changed', self.__on_cmb_pos_changed)
 
         root_cell = gtk.CellRendererText()
         self.root_store = gtk.ListStore(str, gobject.TYPE_PYOBJECT)
@@ -174,30 +188,64 @@ class EditArea(object):
         self.cmb_root.add_attribute(root_cell, 'text', COL_TEXT)
         self.cmb_root.set_model(self.root_store)
         self.cmb_root.set_text_column(COL_TEXT)
-        self.cmb_root.connect('changed', self.__on_cmb_root_changed)
 
         # Setup autocompletion
         pos_cell = gtk.CellRendererText()
-        pos_completion = gtk.EntryCompletion()
-        pos_completion.clear()
-        pos_completion.pack_start(pos_cell)
-        pos_completion.set_cell_data_func(pos_cell, self.__render_pos)
-        pos_completion.set_model(self.pos_store)
-        pos_completion.set_match_func(self.__match_pos)
-        pos_completion.connect('match-selected', self.__on_match_selected, self.cmb_pos)
-        self.cmb_pos.child.set_completion(pos_completion)
+        self.pos_completion = gtk.EntryCompletion()
+        self.pos_completion.clear()
+        self.pos_completion.pack_start(pos_cell)
+        self.pos_completion.set_cell_data_func(pos_cell, self.__render_pos)
+        self.pos_completion.set_model(self.pos_store)
+        self.pos_completion.set_match_func(self.__match_pos)
+        self.cmb_pos.child.set_completion(self.pos_completion)
 
         root_cell = gtk.CellRendererText()
-        root_completion = gtk.EntryCompletion()
-        root_completion.clear()
-        root_completion.pack_start(root_cell)
-        root_completion.set_cell_data_func(root_cell, self.__render_root)
-        root_completion.set_model(self.root_store)
-        root_completion.set_match_func(self.__match_root)
-        root_completion.connect('match-selected', self.__on_match_selected, self.cmb_root)
-        self.cmb_root.child.set_completion(root_completion)
+        self.root_completion = gtk.EntryCompletion()
+        self.root_completion.clear()
+        self.root_completion.pack_start(root_cell)
+        self.root_completion.set_cell_data_func(root_cell, self.__render_root)
+        self.root_completion.set_model(self.root_store)
+        self.root_completion.set_match_func(self.__match_root)
+        self.cmb_root.child.set_completion(self.root_completion)
+
+        self.__connect_signals()
 
         self.refresh()
+
+    def __connect_signals(self):
+        """Connects widgets' signals to their appropriate handlers.
+
+            This method should only be called once (by __init_widgets()), but
+            shouldn't break anything if it's called again: the same events will
+            just be reconnected to the same handlers."""
+        # Buttons
+        self.btn_add_root.connect('clicked', self.__on_btn_add_root_clicked)
+        self.btn_mod_root.connect('clicked', self.__on_btn_mod_root_clicked)
+        self.btn_ok.connect('clicked', self.__on_btn_ok_clicked)
+        # Combo's
+        self.cmb_pos.connect('changed', self.__on_cmb_pos_changed)
+        self.cmb_root.connect('changed', self.__on_cmb_root_changed)
+        # EntryCompletions
+        self.pos_completion.connect('match-selected', self.__on_match_selected, self.cmb_pos)
+        self.root_completion.connect('match-selected', self.__on_match_selected, self.cmb_root)
+
+    def __match_pos(self, completion, key, iter):
+        model = self.pos_store.get_value(iter, COL_MODEL)
+        return model.shortcut.lower().startswith(key) or model.name.lower().startswith(key)
+
+    def __match_root(self, completion, key, iter):
+        model = self.root_store.get_value(iter, COL_MODEL)
+        return model.value.startswith(key)
+
+    # GUI SIGNAL HANDLERS #
+    def __on_btn_add_root_clicked(self, btn):
+        pass
+
+    def __on_btn_mod_root_clicked(self, btn):
+        pass
+
+    def __on_btn_ok_clicked(self, btn):
+        pass
 
     def __on_cmb_pos_changed(self, cmb_pos):
         assert cmb_pos is self.cmb_pos
@@ -239,11 +287,3 @@ class EditArea(object):
             (double clicked) line (a models.Root model in this case)."""
         model = store.get_value(iter, COL_MODEL)
         cell.set_property('text', self.root_tostring(model))
-
-    def __match_pos(self, completion, key, iter):
-        model = self.pos_store.get_value(iter, COL_MODEL)
-        return model.shortcut.lower().startswith(key) or model.name.lower().startswith(key)
-
-    def __match_root(self, completion, key, iter):
-        model = self.root_store.get_value(iter, COL_MODEL)
-        return model.value.startswith(key)
