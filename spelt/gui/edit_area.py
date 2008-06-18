@@ -244,7 +244,12 @@ class EditArea(object):
         pass
 
     def __on_btn_ignore_clicked(self, btn):
-        pass
+        """Set the currently selected surface form's status to "ignored"."""
+        if not self.current_sf:
+            return
+
+        self.current_sf.status = 'ignored'
+        self.gui.reload_database()
 
     def __on_btn_mod_root_clicked(self, btn):
         pass
@@ -253,7 +258,12 @@ class EditArea(object):
         pass
 
     def __on_btn_reject_clicked(self, btn):
-        pass
+        """Set the currently selected surface form's status to "rejected"."""
+        if not self.current_sf:
+            return
+
+        self.current_sf.status = 'rejected'
+        self.gui.reload_database()
 
     def __on_cmb_pos_changed(self, cmb_pos):
         assert cmb_pos is self.cmb_pos
