@@ -43,6 +43,14 @@ class LanguageDBFormatWarning(UserWarning):
     found. Such as no /language_database/users/* (XPath) path found."""
     pass
 
+class PartOfSpeechError(StandardError):
+    """Raised on any part of speech related error."""
+    pass
+
+class RootError(StandardError):
+    """Raised on any word root related error."""
+    pass
+
 class UnknownIDError(StandardError):
     """Raised when an unclaimed ID is being deleted."""
     pass

@@ -55,9 +55,7 @@ class Menu(object):
         desc = self.gui.dlg_source.description
         import_user_id = self.config.options['user_id']
 
-        print 'Before now source'
         src = Source(name=name, filename=fname, desc=desc, import_user_id=import_user_id)
-        print "New source's ID: %d" % (src.id)
         return src
 
     def __init_widgets(self):
@@ -89,14 +87,14 @@ class Menu(object):
             return
 
         if not os.path.exists(filename):
-            self.gui.show_error(_( 'File does not exist: %s' % (filename) ))
+            self.gui.show_error(_('File does not exist: "%s"') % (filename))
             return
 
         try:
             self.config.options['current_database'].load(filename=filename)
         except exc:
-            self.gui.show_error(_( 'Error load database from %s' % (filename) ))
-            print _( 'Error loading database from %s: %s' % (filename, str(exc)) )
+            self.gui.show_error(_( 'Error loading database from "%s"') % (filename) )
+            print _('Error loading database from "%s": %s') % (filename, str(exc))
             return
 
         # Ask the main GUI object to reload the database everywhere...
@@ -107,8 +105,8 @@ class Menu(object):
         try:
             self.config.options['current_database'].save()
         except exc:
-            self.gui.show_error(_('Error saving database!'))
-            print _( 'Error saving database: %s' % (exc) )
+            self.gui.show_error(text=str(exc), title=_('Error loading database!'))
+            print _( 'Error saving database: "%s"') % (exc)
             return
 
     def handler_saveas(self):
@@ -118,14 +116,14 @@ class Menu(object):
         if filename is None:
             return
 
-        if os.path.exists(filename) and not self.gui.prompt(_( 'File %s already exists.\n\nOverwrite?' % (filename) )):
+        if os.path.exists(filename) and not self.gui.prompt(_( 'File "%s" already exists.\n\nOverwrite?' % (filename) )):
             return
 
         try:
             self.config.options['current_database'].save(filename)
         except exc:
             self.gui.show_error('Error saving database to file %s!' % (filename))
-            print 'Error saving database to %s: %s' % (filename, exc)
+            print _('Error saving database to %s: %s' % (filename, exc))
 
     def handler_quit(self):
         """Quit the application after confirmation."""
@@ -142,7 +140,7 @@ class Menu(object):
             print _( 'Unable to save database before e-mailing: %s' % (exc) )
             return
 
-        subj = _('Language database: ') + str(db)
+        subj = _('Language database: ') + str(db).decode('utf-8')
         os.system('xdg-email --utf8 --subject "%s" --attach "%s"' % (subj, db.filename))
         # FIXME: The above line does not attach the file as expected (Linux/Thunderbird)!
 
@@ -167,14 +165,11 @@ class Menu(object):
                 continue
 
             word = line.rstrip()
-            print ('Word: %s' % word),
 
             # Make sure we don't add a word that already exists:
             if db.find(section='surface_forms', value=word):
                 line = f.readline()
                 continue
-
-            print '(A)'
 
             db.add_surface_form(
                 SurfaceForm(value=word, status='todo', user_id=user_id, source_id=src.id)
@@ -182,6 +177,7 @@ class Menu(object):
             line = f.readline()
 
         f.close()
+        self.gui.reload_database()
 
     def handler_roots(self):
         """Show the root management window/dialog. NOT YET IMPLEMENTED!"""

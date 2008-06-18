@@ -189,7 +189,6 @@ class LanguageDB(object):
             raise LanguageDBFormatError(_('Invalid root tag: %s' % xmlroot.tag, self))
 
         if 'lang' not in xmlroot.keys():
-            print xmlroot.keys()
             raise LanguageDBFormatError('No language code specified!', self)
 
         self.filename = filename

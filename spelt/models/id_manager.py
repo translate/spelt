@@ -41,7 +41,7 @@ class IDManager(object):
             self._id = self.__class__.get_id(v)
         else:
             self._id = self.__class__.get_id(v, strict=False)
-        print '%s(%s) %d -> %d' % (self, self.__class__.ids, before_id, self._id)
+        # DEBUG PRINTING: # print '%s(%s) %d -> %d' % (self, self.__class__.ids, before_id, self._id)
 
     id = property(lambda self: self._id, _set_id)
 
@@ -69,21 +69,21 @@ class IDManager(object):
                 excepted. If the requested ID is already used, a IDUsedError
                 is raised. (Default: True)
             """
-        #print '%s(%d).ids = %s (req %d)' % (cls.__name__, cls.max_id, str(cls.ids), requested)
+        # DEBUG PRINTING: # print '%s(%d).ids = %s (req %d)' % (cls.__name__, cls.max_id, str(cls.ids), requested)
 
         if not requested is None and requested > 0:
             if requested not in cls.ids:
                 if requested > cls.max_id:
                     cls.max_id = requested
                 cls.ids.append(requested)
-                #print '%s(%d) <= %d' % (cls.__name__, cls.max_id, requested)
+                # DEBUG PRINTING: # print '%s(%d) <= %d' % (cls.__name__, cls.max_id, requested)
                 return requested
             elif strict:
                 raise IDUsedError(str(requested))
 
         cls.max_id += 1
         cls.ids.append(cls.max_id)
-        #print '%s(%d) <= *%d' % (cls.__name__, cls.max_id, cls.max_id)
+        # DEBUG PRINTING: # print '%s(%d) <= *%d' % (cls.__name__, cls.max_id, cls.max_id)
         return cls.max_id
 
     @classmethod

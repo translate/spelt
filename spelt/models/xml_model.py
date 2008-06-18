@@ -62,7 +62,6 @@ class XMLModel(IDManager):
         assert elem and isinstance(elem, objectify.ObjectifiedElement)
 
         if elem.tag != self.tag:
-            print 'self.tag, elem.tag => %s, %s' % (self.tag, elem.tag)
             raise exceptions.InvalidElementError(_("The parameter element's tag is not valid for this model."))
 
         for at in self.attribs:

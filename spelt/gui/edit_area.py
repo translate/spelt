@@ -20,8 +20,11 @@
 
 import gobject, gtk, gtk.glade
 
-from models import LanguageDB, PartOfSpeech, Root, SurfaceForm
+from common   import exceptions, _
+from models   import LanguageDB, PartOfSpeech, Root, SurfaceForm
 from wordlist import WordList
+
+COL_TEXT, COL_MODEL = range(2)
 
 class EditArea(object):
     """
@@ -37,24 +40,61 @@ class EditArea(object):
         assert isinstance(glade_xml, gtk.glade.XML)
         assert isinstance(word_list, WordList)
 
-        self.glade_xml = glade_xml
-        self.gui       = gui
-        self.langdb    = langdb
-        self.word_list = word_list
+        self.current_sf = None
+        self.glade_xml  = glade_xml
+        self.gui        = gui
+        self.langdb     = langdb
+        self.word_list  = word_list
         self.word_list.word_selected_handlers.append(self.on_surface_form_selected)
         self.__init_widgets()
 
     # METHODS #
     def on_surface_form_selected(self, sf):
+        self.current_sf = sf
         self.lbl_word.set_markup('<b>%s</b>' % sf.value)
 
         if self.langdb is None:
             return
 
-        res = self.langdb.find(id=sf.root_id, section='roots')
+        if not sf.root_id:
+            self.cmb_root.child.set_text('')
+            self.cmb_pos.child.set_text('')
+            self.cmb_root.set_active(-1)
+            self.cmb_pos.set_active(-1)
+            return
 
-        if res:
-            pass
+        roots_found = self.langdb.find(id=sf.root_id, section='roots')
+        # The roots_found list can have a maximum of 1 element, because we
+        # search the database on ID's. ID's are guaranteed to be unique by the
+        # models (via it's inheritence of IDModel).
+        if roots_found:
+            self.select_root(roots_found[0])
+        else:
+            raise exceptions.RootError(_( 'No root object found with ID %d' % (sf.root_id) ))
+
+    def pos_tostring(self, pos):
+        """How a PartOfSpeech object should be represented as a string in the GUI.
+
+            @type  pos: PartOfSpeech
+            @param pos: The PartOfSpeech object to get a string representation for.
+            @rtype      str
+            @return     The string representation of the parameter PartOfSpeech."""
+        if not pos:
+            return ''
+        assert isinstance(pos, PartOfSpeech)
+        # TODO: Test RTL scripts
+        return '%s | %s' % (pos.shortcut, pos.name)
+
+    def root_tostring(self, root):
+        """How a Root object should be represented as a string in the GUI.
+
+            @type  pos: Root
+            @param pos: The Root object to get a string representation for.
+            @rtype      str
+            @return     The string representation of the parameter Root."""
+        if not root:
+            return ''
+        return unicode(root.value) # TODO: Test unicode significance.
 
     def refresh(self, langdb=None):
         """Reload data from self.langdb database."""
@@ -66,8 +106,39 @@ class EditArea(object):
 
         self.pos_store.clear()
         self.root_store.clear()
-        [self.pos_store.append([model]) for model in self.langdb.parts_of_speech]
-        [self.root_store.append([model]) for model in self.langdb.roots]
+        [self.pos_store.append([self.pos_tostring(model), model]) for model in self.langdb.parts_of_speech]
+        [self.root_store.append([self.root_tostring(model), model]) for model in self.langdb.roots]
+
+    def select_root(self, root):
+        """Set the root selected in the cmb_root combo box to that of the parameter.
+
+            @type  root: models.Root
+            @param root: The root to select in the combo box."""
+        assert isinstance(root, Root)
+        iter = self.root_store.get_iter_root()
+
+        while self.root_store.iter_is_valid(iter):
+            if self.root_store.get_value(iter, COL_MODEL) == root:
+                self.cmb_root.set_active_iter(iter)
+                break
+
+            iter = self.root_store.iter_next(iter)
+
+    def select_pos(self, pos):
+        """Set the part of speech selected in the cmb_pos combo box to that of
+            the parameter.
+
+            @type  pos: models.PartOfSpeech
+            @param pos: The part of speech to select in the combo box."""
+        assert isinstance(pos, PartOfSpeech)
+        iter = self.pos_store.get_iter_root()
+
+        while self.pos_store.iter_is_valid(iter):
+            if self.pos_store.get_value(iter, COL_MODEL) == pos:
+                self.cmb_pos.set_active_iter(iter)
+                break
+
+            iter = self.pos_store.iter_next(iter)
 
     def __init_widgets(self):
         """Get and initialize widgets from the Glade object."""
@@ -88,19 +159,23 @@ class EditArea(object):
 
         # Initialize combo's
         pos_cell = gtk.CellRendererText()
-        self.pos_store = gtk.ListStore(gobject.TYPE_PYOBJECT)
+        self.pos_store = gtk.ListStore(str, gobject.TYPE_PYOBJECT)
         self.cmb_pos.clear()
         self.cmb_pos.pack_start(pos_cell)
+        self.cmb_pos.add_attribute(pos_cell, 'text', COL_TEXT)
         self.cmb_pos.set_cell_data_func(pos_cell, self.__render_pos)
         self.cmb_pos.set_model(self.pos_store)
+        self.cmb_pos.set_text_column(COL_TEXT)
         self.cmb_pos.connect('changed', self.__on_cmb_pos_changed)
 
         root_cell = gtk.CellRendererText()
-        self.root_store = gtk.ListStore(gobject.TYPE_PYOBJECT)
+        self.root_store = gtk.ListStore(str, gobject.TYPE_PYOBJECT)
         self.cmb_root.clear()
         self.cmb_root.pack_start(root_cell)
+        self.cmb_root.add_attribute(root_cell, 'text', COL_TEXT)
         self.cmb_root.set_cell_data_func(root_cell, self.__render_root)
         self.cmb_root.set_model(self.root_store)
+        self.cmb_root.set_text_column(COL_TEXT)
         self.cmb_root.connect('changed', self.__on_cmb_root_changed)
 
         # Setup autocompletion
@@ -126,37 +201,35 @@ class EditArea(object):
 
         self.refresh()
 
+    def __on_cmb_pos_changed(self, cmb_pos):
+        assert cmb_pos is self.cmb_pos
+
+        # TODO: Handle root with different POS here.
+
+    def __on_cmb_root_changed(self, cmb_root):
+        assert cmb_root is self.cmb_root
+
     def __on_match_selected(self, completion, store, iter, combo):
-        # FIXME: This method still doesn't work after various attempts.
-        # combo.set_active_iter(store.convert_iter_to_child_iter(iter)) should
-        # work, but doesn't.
-        pass
+        child_iter = store.convert_iter_to_child_iter(iter)
+        if combo is self.cmb_root:
+            self.cmb_pos.grab_focus()
+        else:
+            self.btn_reject.grab_focus()
+        combo.set_active_iter(child_iter)
+        combo.child.set_text( combo.get_model().get_value(child_iter, COL_TEXT) )
 
-    def __on_cmb_pos_changed(self, cmb):
-        iter = cmb.get_active_iter()
-        if iter is None: return
-        model = cmb.get_model().get_value(iter, 0)
-        pos_text = '%s | %s' % (model.shortcut, model.name)
-        cmb.child.set_text( pos_text )
-
-    def __on_cmb_root_changed(self, cmb):
-        iter = cmb.get_active_iter()
-        if iter is None: return
-        model = cmb.get_model().get_value(iter, 0)
-        cmb.child.set_text( model.value )
+        return True
 
     def __render_pos(self, layout, cell, store, iter):
         """Cell data function that renders a part-of-speech from it's model in
             the gtk.ListStore.
-            
+
             See gtk.CellLayout.set_cell_data_func()'s documentation for
             description of parameters. For the sake of practicality, not that
-            "store.get_value(iter, 0)" returns the object from the selected
+            "store.get_value(iter, COL_MODEL)" returns the object from the selected
             (double clicked) line (a models.PartOfSpeech model in this case)."""
-        model = store.get_value(iter, 0)
-        if model is None: return
-        pos_text = '%s | %s' % (model.shortcut, model.name)
-        cell.set_property('text', pos_text)
+        model = store.get_value(iter, COL_MODEL)
+        cell.set_property('text', self.pos_tostring(model))
 
     def __render_root(self, layout, cell, store, iter):
         """Cell data function that renders a root word from it's model in
@@ -164,16 +237,15 @@ class EditArea(object):
             
             See gtk.CellLayout.set_cell_data_func()'s documentation for
             description of parameters. For the sake of practicality, not that
-            "store.get_value(iter, 0)" returns the object from the selected
+            "store.get_value(iter, COL_MODEL)" returns the object from the selected
             (double clicked) line (a models.Root model in this case)."""
-        model = store.get_value(iter, 0)
-        if model is None: return
-        cell.set_property('text', model.value)
+        model = store.get_value(iter, COL_MODEL)
+        cell.set_property('text', self.root_tostring(model))
 
     def __match_pos(self, completion, key, iter):
-        model = self.pos_store.get_value(iter, 0)
-        return model.shortcut.startswith(key) or model.name.startswith(key)
+        model = self.pos_store.get_value(iter, COL_MODEL)
+        return model.shortcut.lower().startswith(key) or model.name.lower().startswith(key)
 
     def __match_root(self, completion, key, iter):
-        model = self.root_store.get_value(iter, 0)
+        model = self.root_store.get_value(iter, COL_MODEL)
         return model.value.startswith(key)

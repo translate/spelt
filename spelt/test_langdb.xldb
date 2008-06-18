@@ -48,7 +48,7 @@
   <surface_forms>
     <surface_form id="1" user_id="4" date="111111" source_id="1" root_id="25644">
       <value>koeie</value>
-      <status>classified</status>
+      <status>todo</status>
     </surface_form>
     <surface_form id="3" user_id="4" date="111111" source_id="2">
       <value>koeitjie</value>

@@ -54,7 +54,13 @@ class WordList(object):
             return
 
         self.store.clear()
-        [self.store.append([model]) for model in self.langdb.surface_forms]
+        # TODO: Replace next line with one supporting filters.
+        # Currently only surface forms with status == 'todo' are filtered.
+        [self.store.append([model]) for model in self.langdb.surface_forms if model.status == 'todo']
+
+        iter = self.store.get_iter_first()
+        if self.treeview.get_model().iter_is_valid(iter):
+            self.treeview.get_selection().select_iter(iter)
 
     def __init_widgets(self):
         """Get and initialize widgets from the Glade object."""

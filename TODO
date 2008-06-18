@@ -1,2 +1,7 @@
-- Fix Spelt meta-data (descriptions, icons, etc.)
-- README's from all directories
+- Installation scripts.
+- Proper program launcher.
+- README's from all directories.
+- Replace debug "print" statements with proper debug logging.
+- Add normalization of Unicode with tests.
+- Document code conventions.
+- Confirm that "str(exc)" is not problematic for printing exceptions.
