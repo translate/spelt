@@ -19,9 +19,9 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import time
+from common    import _
 from datetime  import datetime
 from lxml      import objectify
-from pan_app   import _
 from xml_model import XMLModel
 
 class Source(XMLModel):
