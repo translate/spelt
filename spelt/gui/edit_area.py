@@ -163,7 +163,6 @@ class EditArea(object):
         self.cmb_pos.clear()
         self.cmb_pos.pack_start(pos_cell)
         self.cmb_pos.add_attribute(pos_cell, 'text', COL_TEXT)
-        self.cmb_pos.set_cell_data_func(pos_cell, self.__render_pos)
         self.cmb_pos.set_model(self.pos_store)
         self.cmb_pos.set_text_column(COL_TEXT)
         self.cmb_pos.connect('changed', self.__on_cmb_pos_changed)
@@ -182,6 +181,7 @@ class EditArea(object):
         pos_completion = gtk.EntryCompletion()
         pos_completion.clear()
         pos_completion.pack_start(pos_cell)
+        pos_completion.set_cell_data_func(pos_cell, self.__render_pos)
         pos_completion.set_model(self.pos_store)
         pos_completion.set_match_func(self.__match_pos)
         pos_completion.connect('match-selected', self.__on_match_selected, self.cmb_pos)
@@ -217,6 +217,28 @@ class EditArea(object):
         combo.child.set_text( combo.get_model().get_value(child_iter, COL_TEXT) )
 
         return True
+
+    def __render_pos(self, layout, cell, store, iter):
+        """Cell data function that renders a part-of-speech from it's model in
+            the gtk.ListStore.
+
+            See gtk.CellLayout.set_cell_data_func()'s documentation for
+            description of parameters. For the sake of practicality, not that
+            "store.get_value(iter, COL_MODEL)" returns the object from the selected
+            (double clicked) line (a models.PartOfSpeech model in this case)."""
+        model = store.get_value(iter, COL_MODEL)
+        cell.set_property('text', self.pos_tostring(model))
+
+    def __render_root(self, layout, cell, store, iter):
+        """Cell data function that renders a root word from it's model in
+            the gtk.ListStore.
+            
+            See gtk.CellLayout.set_cell_data_func()'s documentation for
+            description of parameters. For the sake of practicality, not that
+            "store.get_value(iter, COL_MODEL)" returns the object from the selected
+            (double clicked) line (a models.Root model in this case)."""
+        model = store.get_value(iter, COL_MODEL)
+        cell.set_property('text', self.root_tostring(model))
 
     def __match_pos(self, completion, key, iter):
         model = self.pos_store.get_value(iter, COL_MODEL)
