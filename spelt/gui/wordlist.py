@@ -29,6 +29,12 @@ class WordList(object):
     window.
     """
 
+    # MEMBERS #
+    word_selected_handlers = []
+    """A list of callable objects that will be called in order when a surface
+    form is selected from the list. The callable should take a single
+    parameter: the models.SurfaceForm model of the selected word."""
+
     # CONSTRUCTOR #
     def __init__(self, glade_xml, langdb=None, gui=None):
         """Constructor.
