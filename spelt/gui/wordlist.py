@@ -64,9 +64,12 @@ class WordList(object):
         # Currently only surface forms with status == 'todo' are filtered.
         [self.store.append([model]) for model in self.langdb.surface_forms if model.status == 'todo']
 
+        # Now that the TreeView's model is filled, select the first row...
         iter = self.store.get_iter_first()
-        if self.treeview.get_model().iter_is_valid(iter):
+        # FIXME: Check if the following "if" is actually necessary
+        if self.store.iter_is_valid(iter):
             self.treeview.get_selection().select_iter(iter)
+            self.treeview.row_activated(self.store.get_path(iter), self.treeview.get_column(0))
 
     def __init_widgets(self):
         """Get and initialize widgets from the Glade object."""
