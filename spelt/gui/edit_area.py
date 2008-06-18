@@ -158,8 +158,8 @@ class EditArea(object):
         """Get and initialize widgets from the Glade object."""
         widgets = (
             'lbl_word',
-            'btn_blacklist',
             'btn_reject',
+            'btn_ignore',
             'cmb_root',
             'cmb_pos',
             'btn_ok',
@@ -220,8 +220,10 @@ class EditArea(object):
             just be reconnected to the same handlers."""
         # Buttons
         self.btn_add_root.connect('clicked', self.__on_btn_add_root_clicked)
+        self.btn_ignore.connect('clicked', self.__on_btn_ignore_clicked)
         self.btn_mod_root.connect('clicked', self.__on_btn_mod_root_clicked)
         self.btn_ok.connect('clicked', self.__on_btn_ok_clicked)
+        self.btn_reject.connect('clicked', self.__on_btn_reject_clicked)
         # Combo's
         self.cmb_pos.connect('changed', self.__on_cmb_pos_changed)
         self.cmb_root.connect('changed', self.__on_cmb_root_changed)
@@ -241,10 +243,16 @@ class EditArea(object):
     def __on_btn_add_root_clicked(self, btn):
         pass
 
+    def __on_btn_ignore_clicked(self, btn):
+        pass
+
     def __on_btn_mod_root_clicked(self, btn):
         pass
 
     def __on_btn_ok_clicked(self, btn):
+        pass
+
+    def __on_btn_reject_clicked(self, btn):
         pass
 
     def __on_cmb_pos_changed(self, cmb_pos):

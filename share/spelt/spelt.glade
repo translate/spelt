@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Wed Jun 18 12:51:07 2008 -->
+<!--Generated with glade3 3.4.5 on Wed Jun 18 13:12:46 2008 -->
 <glade-interface>
   <widget class="GtkWindow" id="wnd_main">
     <child>
@@ -185,7 +185,7 @@
                     <property name="visible">True</property>
                     <property name="layout_style">GTK_BUTTONBOX_END</property>
                     <child>
-                      <widget class="GtkButton" id="btn_blacklist">
+                      <widget class="GtkButton" id="btn_reject">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
@@ -219,7 +219,7 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkButton" id="btn_reject">
+                      <widget class="GtkButton" id="btn_ignore">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
