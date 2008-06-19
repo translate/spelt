@@ -55,7 +55,12 @@ class Menu(object):
         desc = self.gui.dlg_source.description
         import_user_id = self.config.options['user_id']
 
-        src = Source(name=name, filename=fname, desc=desc, import_user_id=import_user_id)
+        src = Source(
+            name           = name,
+            filename       = fname,
+            desc           = desc,
+            import_user_id = import_user_id
+        )
         return src
 
     def __init_widgets(self):

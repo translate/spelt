@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import gobject, gtk, gtk.glade
 
 from common   import Configuration, exceptions, _
@@ -115,7 +116,11 @@ class EditArea(object):
             # If we get here, we have a new root on our hands
             self.select_root(None) # Deselect root
             self.cmb_root.child.set_text(text)
-            self.current_root = Root(value=text, user_id=self.config.options['user_id'])
+            self.current_root = Root(
+                value   = text,
+                user_id = self.config.options['user_id'],
+                date    = datetime.datetime.now()
+            )
             self.select_pos(None)  # Deselect POS
 
             self.set_visible(btn_ok=False, btn_add_root=True)
@@ -219,7 +224,7 @@ class EditArea(object):
             self.set_sensitive(cmb_pos=False)
             return
         assert isinstance(root, Root)
-        iter = self.root_store.get_iter_root()
+        iter = self.root_store.get_iter_first()
 
         while self.root_store.iter_is_valid(iter):
             if self.root_store.get_value(iter, COL_MODEL) == root:
@@ -251,7 +256,7 @@ class EditArea(object):
             self.cmb_pos.child.set_text('')
             return
         assert isinstance(pos, PartOfSpeech)
-        iter = self.pos_store.get_iter_root()
+        iter = self.pos_store.get_iter_first()
 
         while self.pos_store.iter_is_valid(iter):
             if self.pos_store.get_value(iter, COL_MODEL) == pos:
@@ -374,7 +379,11 @@ class EditArea(object):
         """Add the current root to the language database."""
         if self.langdb.find(id=self.current_root.id, section='roots'):
             # The root already exists, so we have to duplicate it. It should have a different POS, though.
-            self.current_root = Root(value=self.current_root.value, user_id=self.config.options['user_id'])
+            self.current_root = Root(
+                value   = self.current_root.value,
+                user_id = self.config.options['user_id'],
+                date    = datetime.datetime.now()
+            )
         self.current_root.pos_id = self.current_pos.id
         self.langdb.add_root(self.current_root)
 
@@ -401,8 +410,9 @@ class EditArea(object):
         if self.cmb_pos.get_active() < 0:
             self.langdb.add_part_of_speech(self.current_pos)
 
-        self.current_root.user_id = self.config.options['user_id']
+        self.current_root.date    = datetime.datetime.now()
         self.current_root.pos_id  = self.current_pos.id
+        self.current_root.user_id = self.config.options['user_id']
 
         self.refresh()
 
@@ -422,6 +432,8 @@ class EditArea(object):
             self.current_sf.user_id = self.config.options['user_id']
 
         self.current_sf.status  = 'classified'
+        self.current_sf.date    = datetime.datetime.now()
+
         self.wordlist.refresh() # This will select the next word at the top of the word list
 
     def __on_btn_reject_clicked(self, btn):
