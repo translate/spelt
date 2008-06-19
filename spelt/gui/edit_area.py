@@ -84,7 +84,7 @@ class EditArea(object):
                 self.cmb_pos.grab_focus()
                 return
             self.cmb_pos.child.set_text(text)
-            self.current_pos = PartOfSpeech(name=name, shortcut=shortcut)
+            self.current_pos = PartOfSpeech(name=unicode(name), shortcut=unicode(shortcut))
 
             # Determine which buttons should be shown/active
             if self.cmb_root.get_active() < 0:
@@ -121,7 +121,7 @@ class EditArea(object):
             self.select_root(None) # Deselect root
             self.cmb_root.child.set_text(text)
             self.current_root = Root(
-                value   = text,
+                value   = unicode(text),
                 user_id = self.config.options['user_id'],
                 date    = datetime.datetime.now()
             )
@@ -384,7 +384,7 @@ class EditArea(object):
         if self.langdb.find(id=self.current_root.id, section='roots'):
             # The root already exists, so we have to duplicate it. It should have a different POS, though.
             self.current_root = Root(
-                value   = self.current_root.value,
+                value   = unicode(self.current_root.value),
                 user_id = self.config.options['user_id'],
                 date    = datetime.datetime.now()
             )
