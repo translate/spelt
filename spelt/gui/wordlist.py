@@ -66,8 +66,11 @@ class WordList(object):
 
         # Now that the TreeView's model is filled, select the first row...
         iter = self.store.get_iter_first()
-        # FIXME: Check if the following "if" is actually necessary
-        if self.store.iter_is_valid(iter):
+        if iter is None:
+            for f in self.word_selected_handlers:
+                if callable(f):
+                    f(None)
+        else:
             self.treeview.get_selection().select_iter(iter)
             self.treeview.row_activated(self.store.get_path(iter), self.treeview.get_column(0))
 

@@ -44,6 +44,7 @@ class GUI(object):
 
         # FIXME: The following values for the configuration is only for use
         # until the Configuration class gets some functionality.
+        self.config.options['may_create_pos'] = True
         self.config.options['previous_database_path'] = 'test_langdb.xldb'
         self.config.options['user_id'] = 999
 
@@ -64,7 +65,10 @@ class GUI(object):
         self.word_list = WordList(self.glade, langdb=db, gui=self)
         self.edit_area = EditArea(self.glade, self.word_list, langdb=db, gui=self)
 
+        self.word_list.word_selected_handlers.append(self.check_work_done)
+
         self.main_window.show_all()
+        self.reload_database()
 
     def __del__(self):
         """Destructor."""
@@ -127,6 +131,10 @@ class GUI(object):
 
         # Source dialog wrapper
         self.dlg_source = DlgSource(self.glade)
+
+    def check_work_done(self, sf):
+        if sf is None:
+            self.show_info(_('All work done!'))
 
     def get_open_filename(self, title=_('Select language database to open')):
         """Display an "Open" dialog and return the selected file.
