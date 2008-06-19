@@ -156,7 +156,7 @@ class LanguageDB(object):
         assert id is None or isinstance(id, int)
 
         if not section is None and section not in self.model_list_map.values():
-            section=None
+            raise InvalidSectionError(section)
 
         sections = section and [getattr(self, section)] or [getattr(self, s) for s in self.model_list_map.values()]
         models = []
@@ -210,11 +210,51 @@ class LanguageDB(object):
 
                     mlist.append(model)
 
+    def refreshModels(self):
+        """Calls refreshModelXML() on all models in the database."""
+        for section in self.sections.keys():
+            for model in self.sections[section]:
+                self.refreshModelXML(section, model.id)
+
+    def refreshModelXML(self, section, id):
+        """Recreate the XML-subtree for the model with the specified ID in the
+            specified section.
+
+            This method is used on all models in all sections (by
+            refreshModels()) before a save() to make sure that the internal XML
+            tree reflects the values of the models.
+
+            @type  section: str
+            @param section: The section of the model which should have its XML
+                regenerated.
+            @type  id:      int
+            @param id:      The ID of the model that should have its XML
+                regenerated."""
+        models = self.find(id=id, section=section)
+
+        if not models:
+            raise exceptions.UnknownModelError(_('No model with ID %d found in section %s') % (id, section))
+
+        xml_section = getattr(self.xmlroot, section)
+        # First we delete the lxml element from self.xmlroot
+        found = False
+        for elem in xml_section.getchildren():
+            if int(elem.get('id')) == id:
+                xml_section.remove(elem)
+                found = True
+                break
+
+        if not found:
+            raise Exception( _("This is weird. I've tested that a model with ID %d exists in sectin %s, but couldn't find it in the XML tree!") % (id, section) )
+
+        # Now we recreate it
+        getattr(self.xmlroot, section).append(models[0].to_xml())
+
     def save(self, filename=None):
         """Save the represented language database to the specified file.
+
             @type  filename: basestring
-            @param filename: The path and name of the file to store the language database in.
-            """
+            @param filename: The path and name of the file to store the language database in."""
         if filename is None and not self.filename is None:
             filename = self.filename
 
@@ -222,7 +262,9 @@ class LanguageDB(object):
             raise IOError('No filename given!')
 
         f = open(filename, 'w')
-        # FIXME: Find a way to make deannotate() below actually remove those
+        self.refreshModels()
+
+        # FIXME (Bug #423): Find a way to make deannotate() below actually remove those
         # annoying pytype and xsi attribs.
         objectify.deannotate(self.xmlroot)
         print >> f, etree.tostring(

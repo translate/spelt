@@ -31,7 +31,11 @@ class IDUsedError(StandardError):
 
 class InvalidElementError(StandardError):
     """Thrown by an XMLModel when an attempt is made to use an invalid element
-    to in its from_xml() method."""
+    in its from_xml() method."""
+    pass
+
+class InvalidSectionError(StandardError):
+    """Raised if an invalid section was specified."""
     pass
 
 class LanguageDBFormatError(StandardError):

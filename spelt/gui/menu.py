@@ -126,7 +126,7 @@ class Menu(object):
 
         try:
             self.config.options['current_database'].save(filename)
-        except exc:
+        except Exception, exc:
             self.gui.show_error('Error saving database to file %s!' % (filename))
             print _('Error saving database to %s: %s' % (filename, exc))
 

@@ -28,6 +28,7 @@ __all__ = [
     'DuplicateModelError',
     'IDUsedError',
     'InvalidElementError',
+    'InvalidSectionError',
     'LanguageDBFormatError',
     'LanguageDBFormatWarning',
     'UnknownIDError',
