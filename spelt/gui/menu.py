@@ -140,9 +140,9 @@ class Menu(object):
 
         try:
             db.save()
-        except exc:
+        except Exception, exc:
             self.gui.show_error(_('Unable to save database before e-mailing!'))
-            print _( 'Unable to save database before e-mailing: %s' % (exc) )
+            print _('Unable to save database before e-mailing: "%s"') % (exc)
             return
 
         subj = _('Language database: ') + str(db).decode('utf-8')
@@ -188,6 +188,10 @@ class Menu(object):
         """Show the root management window/dialog. NOT YET IMPLEMENTED!"""
         # TODO: Implement this method
         self.gui.show_error(_('This functionality is not yet implemented.'))
+
+    def handler_about(self):
+        # TODO: Show about dialog
+        pass
 
     def __on_item_activated(self, menu_item):
         """Signal handler for all menu items."""
