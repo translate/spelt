@@ -72,6 +72,10 @@ class EditArea(object):
             if pos[0].id != self.current_root.pos_id:
                 self.set_sensitive(btn_add_root=True, btn_mod_root=True)
                 self.set_visible(btn_ok=False, btn_add_root=True, btn_mod_root=True)
+
+            if self.cmb_root.get_active() < 0:
+                # If we are working with a new root, there is not sense in try to modify it.
+                self.set_visible(btn_mod_root=False)
         else:
             # If we get here, we have a new part of speech
             self.select_pos(None)
