@@ -307,19 +307,19 @@ class EditArea(object):
         # Initialize combo's
         pos_cell = gtk.CellRendererText()
         self.pos_store = gtk.ListStore(str, gobject.TYPE_PYOBJECT)
+        self.cmb_pos.set_model(self.pos_store)
+        self.cmb_pos.set_text_column(COL_TEXT)
         self.cmb_pos.clear()
         self.cmb_pos.pack_start(pos_cell)
         self.cmb_pos.add_attribute(pos_cell, 'text', COL_TEXT)
-        self.cmb_pos.set_model(self.pos_store)
-        self.cmb_pos.set_text_column(COL_TEXT)
 
         root_cell = gtk.CellRendererText()
         self.root_store = gtk.ListStore(str, gobject.TYPE_PYOBJECT)
+        self.cmb_root.set_model(self.root_store)
+        self.cmb_root.set_text_column(COL_TEXT)
         self.cmb_root.clear()
         self.cmb_root.pack_start(root_cell)
         self.cmb_root.add_attribute(root_cell, 'text', COL_TEXT)
-        self.cmb_root.set_model(self.root_store)
-        self.cmb_root.set_text_column(COL_TEXT)
 
         # Setup autocompletion
         pos_cell = gtk.CellRendererText()
