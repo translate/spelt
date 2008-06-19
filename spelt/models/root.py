@@ -93,10 +93,10 @@ class Root(XMLModel):
         self.pos_id = int(self.pos_id)
         self.user_id = int(self.user_id)
 
-        self.validateData()
+        self.validate_data()
 
-    def validateData(self):
-        """See XMLModel.validateData()."""
+    def validate_data(self):
+        """See XMLModel.validate_data()."""
         assert len(self.value) > 0
         assert self.remarks is None or isinstance(self.remarks, basestring)
         assert isinstance(self.id, int)

@@ -82,10 +82,10 @@ class Source(XMLModel):
 
         self.import_user_id = int(self.import_user_id)
 
-        self.validateData()
+        self.validate_data()
 
-    def validateData(self):
-        """See XMLModel.validateData()."""
+    def validate_data(self):
+        """See XMLModel.validate_data()."""
         assert len(self.name) > 0
         assert isinstance(self.id, int)
         assert isinstance(self._date, datetime) and len(self.date) > 0

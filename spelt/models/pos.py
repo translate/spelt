@@ -63,10 +63,10 @@ class PartOfSpeech(XMLModel):
         except AssertionError:
             pass
 
-        self.validateData()
+        self.validate_data()
 
-    def validateData(self):
-        """See XMLModel.validateData()."""
+    def validate_data(self):
+        """See XMLModel.validate_data()."""
         assert len(self.name) > 0
         assert self.shortcut is None or len(self.shortcut) > 0
         assert isinstance(self.id, int)

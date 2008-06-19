@@ -44,8 +44,8 @@ class User(XMLModel):
         self.id   = id
 
     # METHODS #
-    def validateData(self):
-        """See XMLModel.validateData()."""
+    def validate_data(self):
+        """See XMLModel.validate_data()."""
         assert isinstance(self.id, int)
         assert isinstance(unicode(self.name), basestring) and len(unicode(self.name)) > 0
 

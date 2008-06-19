@@ -82,13 +82,13 @@ class XMLModel(IDManager):
             else:
                 setattr(self, v, elem_v)
 
-        self.validateData()
+        self.validate_data()
 
     def to_xml(self):
         """Create an lxml.objectify.ObjectifiedElement from the model.
             @rtype:  objectify.Element
             @return: The constructed XML element."""
-        self.validateData()
+        self.validate_data()
 
         root = objectify.Element(self.tag)
 
@@ -103,7 +103,7 @@ class XMLModel(IDManager):
 
         return root
 
-    def validateData(self):
+    def validate_data(self):
         """
         Checks whether all data-constraints are met.
 
