@@ -143,7 +143,7 @@ class LanguageDB(object):
 
     def find(self, id=0, section=None, **kwargs):
         """A generic method to find any of the models contained in the current language database.
-            If kwargs are specified, a model will match if ANY of the paris match.
+            If kwargs are specified, a model will match if ANY of the pairs match.
             @type  id:      int
             @param id:      The unique ID for the model to find. (Default: 0 - won't find anything)
             @type  section: str
