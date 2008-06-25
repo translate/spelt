@@ -18,12 +18,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from config     import Configuration
-from exceptions import *
-from pan_app    import _
+import gettext, pygtk
+
+from spelt.__version__ import ver
+
+from spelt.common.config     import Configuration
+from spelt.common.exceptions import *
+
+pygtk.require("2.0")
+_ = gettext.gettext
+x_generator = 'Spelt ' + ver
 
 __all__ = [
     '_',
+    'ver',
+    'x_generator',
     'Configuration',
     'DuplicateModelError',
     'IDUsedError',
