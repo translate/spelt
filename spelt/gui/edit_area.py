@@ -21,9 +21,9 @@
 import datetime
 import gobject, gtk, gtk.glade
 
-from common   import Configuration, exceptions, _
-from models   import LanguageDB, PartOfSpeech, Root, SurfaceForm
-from wordlist import WordList
+from spelt.common       import Configuration, exceptions, _
+from spelt.models       import LanguageDB, PartOfSpeech, Root, SurfaceForm
+from spelt.gui.wordlist import WordList
 
 COL_TEXT, COL_MODEL = range(2)
 
@@ -63,15 +63,20 @@ class EditArea(object):
 
         shortcut, name = ('|' in text) and ( [substr.strip() for substr in text.split('|')] ) or ('_', text)
         # Search for POS on value and shortcut
-        pos = self.langdb.find(section='parts_of_speech', name=name, shortcut=shortcut)
+        pos = \
+            self.langdb.find(section='parts_of_speech', name=name, shortcut=shortcut) + \
+            self.langdb.find(section='parts_of_speech', name=text, shortcut=text)
 
-        if pos and len(pos) > 0:
+        if pos:
             # NOTE: If more than one part of speech matches, we use the first one
             self.select_pos(pos[0])
 
             if pos[0].id != self.current_root.pos_id:
-                self.set_sensitive(btn_add_root=True, btn_mod_root=True)
+                self.set_sensitive(btn_ok=False, btn_add_root=True, btn_mod_root=True)
                 self.set_visible(btn_ok=False, btn_add_root=True, btn_mod_root=True)
+            else:
+                self.set_sensitive(btn_ok=True, btn_add_root=False, btn_mod_root=False)
+                self.set_visible(btn_ok=True, btn_add_root=False, btn_mod_root=False)
 
             if self.cmb_root.get_active() < 0:
                 # If we are working with a new root, there is not sense in try to modify it.
@@ -79,22 +84,7 @@ class EditArea(object):
         else:
             # If we get here, we have a new part of speech
             self.select_pos(None)
-            # Only create a new part of speech if the config says we are allowed:
-            if not self.config.options['may_create_pos']:
-                self.cmb_pos.grab_focus()
-                return
-            self.cmb_pos.child.set_text(text)
-            self.current_pos = PartOfSpeech(name=unicode(name), shortcut=unicode(shortcut))
-
-            # Determine which buttons should be shown/active
-            if self.cmb_root.get_active() < 0:
-                # If no existing root is selected, we have a new root and btn_mod_root should be hidden
-                self.set_sensitive(btn_ok=False, btn_add_root=True, btn_mod_root=False)
-                self.set_visible(btn_ok=False, btn_mod_root=False)
-            else:
-                # Otherwise, only the part of speech have change; show btn_{add,mod}_root
-                self.set_sensitive(btn_ok=False, btn_add_root=True, btn_mod_root=True)
-                self.set_visible(btn_ok=False, btn_add_root=True, btn_mod_root=True)
+            return
 
         # Select the focus to the first button in the list that is both visible and active
         for btn in (self.btn_ok, self.btn_add_root, self.btn_mod_root):
@@ -122,7 +112,7 @@ class EditArea(object):
             self.cmb_root.child.set_text(text)
             self.current_root = Root(
                 value   = unicode(text),
-                user_id = self.config.options['user_id'],
+                user_id = self.config.user['id'],
                 date    = datetime.datetime.now()
             )
             self.select_pos(None)  # Deselect POS
@@ -200,7 +190,8 @@ class EditArea(object):
             @return     The string representation of the parameter Root."""
         if not root:
             return ''
-        return unicode(root.value) # TODO: Test unicode significance.
+        pos = self.langdb.find(id=root.pos_id, section='parts_of_speech')[0]
+        return u"%s (%s)" % (root.value, pos.name)
 
     def refresh(self, langdb=None):
         """Reload data from self.langdb database."""
@@ -213,7 +204,7 @@ class EditArea(object):
         self.pos_store.clear()
         self.root_store.clear()
         [self.pos_store.append([self.pos_tostring(model), model]) for model in self.langdb.parts_of_speech]
-        [self.root_store.append([self.root_tostring(model), model]) for model in self.langdb.roots]
+        [self.root_store.append([model.value, model]) for model in self.langdb.roots]
 
     def select_root(self, root):
         """Set the root selected in the cmb_root combo box to that of the parameter.
@@ -385,7 +376,7 @@ class EditArea(object):
             # The root already exists, so we have to duplicate it. It should have a different POS, though.
             self.current_root = Root(
                 value   = unicode(self.current_root.value),
-                user_id = self.config.options['user_id'],
+                user_id = self.config.user['id'],
                 date    = datetime.datetime.now()
             )
         self.current_root.pos_id = self.current_pos.id
@@ -399,7 +390,7 @@ class EditArea(object):
         # Update GUI
         self.set_sensitive(btn_ok=True, btn_add_root=False, btn_mod_root=False)
         self.set_visible(  btn_ok=True, btn_add_root=False, btn_mod_root=False)
-        self.btn_ok.grab_focus()
+        self.btn_ok.clicked()
 
     def __on_btn_ignore_clicked(self, btn):
         """Set the currently selected surface form's status to "ignored"."""
@@ -416,14 +407,14 @@ class EditArea(object):
 
         self.current_root.date    = datetime.datetime.now()
         self.current_root.pos_id  = self.current_pos.id
-        self.current_root.user_id = self.config.options['user_id']
+        self.current_root.user_id = self.config.user['id']
 
         self.refresh()
 
         # Update GUI
         self.set_sensitive(btn_ok=True, btn_add_root=False, btn_mod_root=False)
         self.set_visible(  btn_ok=True, btn_add_root=False, btn_mod_root=False)
-        self.btn_ok.grab_focus()
+        self.btn_ok.clicked()
 
     def __on_btn_ok_clicked(self, btn):
         """Save changes made to the selected surface form, save it and move on
@@ -433,7 +424,7 @@ class EditArea(object):
 
         if self.current_sf.root_id != self.current_root.id:
             self.current_sf.root_id = self.current_root.id
-            self.current_sf.user_id = self.config.options['user_id']
+            self.current_sf.user_id = self.config.user['id']
 
         self.current_sf.status  = 'classified'
         self.current_sf.date    = datetime.datetime.now()
