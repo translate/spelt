@@ -19,9 +19,10 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import time
-from datetime  import datetime
-from lxml      import objectify
-from xml_model import XMLModel
+from datetime import datetime
+from lxml     import objectify
+
+from spelt.models.xml_model import XMLModel
 
 class Root(XMLModel):
     """
@@ -98,7 +99,7 @@ class Root(XMLModel):
     def validate_data(self):
         """See XMLModel.validate_data()."""
         assert len(self.value) > 0
-        assert self.remarks is None or isinstance(self.remarks, basestring)
+        assert self.remarks is None or isinstance(self.remarks, basestring) or isinstance(self.remarks, objectify.NoneElement)
         assert isinstance(self.id, int)
         assert isinstance(self.pos_id, int)
         assert isinstance(self.user_id, int)
