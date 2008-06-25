@@ -45,3 +45,7 @@ class Spelt(object):
                 return file
 
         raise Exception(_('Could not find Glade file: ') + glade_filename)
+
+    def run(self):
+        """Calls gtk.main()"""
+        gtk.main()
