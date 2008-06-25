@@ -19,16 +19,29 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import gtk
+import os
 
-from common import Configuration
 from gui    import GUI
+from common import _
 
-global config
-config = Configuration()
+GLADE_DIRS = [
+    ['..',    'share', 'spelt'], # TODO: Check if both are necessary
+    ['share', 'spelt']
+]
 
-def main():
-    GUI()
-    gtk.main()
+class Spelt(object):
+    """Main entry point for Spelt."""
+    def __init__(self, basepath):
+        """Creates a gui.GUI object."""
+        self.gui = GUI(self.find_glade(basepath, 'spelt.glade'))
 
-if __name__ == '__main__':
-    main()
+    def find_glade(self, basepath, glade_filename):
+        """This method is based on the load_glade_file() function in VirTaal's virtaal/main_window.py."""
+        for glade_dir in GLADE_DIRS:
+            path = glade_dir + [glade_filename]
+            file = os.path.join(basepath or os.path.dirname(__file__), *path)
+
+            if os.path.exists(file):
+                return file
+
+        raise Exception(_('Could not find Glade file: ') + glade_filename)
