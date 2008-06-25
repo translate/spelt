@@ -19,9 +19,10 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import time
-from datetime  import datetime
-from lxml      import objectify
-from xml_model import XMLModel
+from datetime import datetime
+from lxml     import objectify
+
+from spelt.models.xml_model import XMLModel
 
 VALID_STATUSES = ('classified', 'ignored', 'rejected', 'todo')
 

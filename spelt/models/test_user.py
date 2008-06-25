@@ -20,7 +20,8 @@
 
 from lxml     import objectify
 from StringIO import StringIO
-from user     import User
+
+from spelt.models.user import User
 
 class TestUser:
     """Unit test for the User model class."""

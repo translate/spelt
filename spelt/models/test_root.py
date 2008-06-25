@@ -21,8 +21,9 @@
 import time
 from datetime import datetime
 from lxml     import objectify
-from root     import Root
 from StringIO import StringIO
+
+from spelt.models.root import Root
 
 class TestRoot:
     """Unit test for the Source model class."""

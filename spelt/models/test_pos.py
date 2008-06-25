@@ -19,8 +19,9 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from lxml     import objectify
-from pos      import PartOfSpeech
 from StringIO import StringIO
+
+from spelt.models.pos import PartOfSpeech
 
 class TestPartOfSpeech(object):
     """Unit test for the PartOfSpeech model class."""

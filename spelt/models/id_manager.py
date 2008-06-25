@@ -18,9 +18,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from common             import _
-from common.exceptions  import *
-from lxml               import objectify
+from lxml import objectify
+
+from spelt.common            import _
+from spelt.common.exceptions import *
 
 class IDManager(object):
     """

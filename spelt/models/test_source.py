@@ -20,8 +20,9 @@
 
 from datetime import datetime
 from lxml     import objectify
-from source   import Source
 from StringIO import StringIO
+
+from spelt.models.source import Source
 
 class TestSource:
     """Unit test for the Source model class."""

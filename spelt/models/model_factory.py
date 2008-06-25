@@ -18,13 +18,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from lxml         import objectify
+from lxml import objectify
 
-from pos          import PartOfSpeech
-from root         import Root
-from source       import Source
-from surface_form import SurfaceForm
-from user         import User
+from spelt.models.pos          import PartOfSpeech
+from spelt.models.root         import Root
+from spelt.models.source       import Source
+from spelt.models.surface_form import SurfaceForm
+from spelt.models.user         import User
 
 class ModelFactory(object):
     """

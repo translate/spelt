@@ -18,8 +18,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from lxml      import objectify
-from xml_model import XMLModel
+from lxml import objectify
+
+from spelt.models.xml_model import XMLModel
 
 class PartOfSpeech(XMLModel):
     """

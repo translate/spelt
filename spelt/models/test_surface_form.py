@@ -18,10 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from datetime     import datetime
-from lxml         import etree, objectify
-from StringIO     import StringIO
-from surface_form import SurfaceForm
+from datetime import datetime
+from lxml     import etree, objectify
+from StringIO import StringIO
+
+from spelt.models.surface_form import SurfaceForm
 
 class TestSurfaceForm(object):
     """Unit test for the SurfaceForm model class."""

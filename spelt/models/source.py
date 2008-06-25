@@ -19,11 +19,12 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import time
+from datetime import datetime
+from lxml     import objectify
 
-from common    import _
-from datetime  import datetime
-from lxml      import objectify
-from xml_model import XMLModel
+from spelt.common import _
+
+from spelt.models.xml_model import XMLModel
 
 class Source(XMLModel):
     """

@@ -21,7 +21,7 @@
 # Contains LanguageDB: the main model representing a language database and provides access to all its parts.
 
 import os.path
-from lxml      import etree
+from lxml import etree
 
 from langdb    import LanguageDB
 from user      import User

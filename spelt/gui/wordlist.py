@@ -20,8 +20,8 @@
 
 import gobject, gtk, gtk.glade
 
-from common import Configuration, _
-from models import LanguageDB, SurfaceForm
+from spelt.common import Configuration, _
+from spelt.models import LanguageDB, SurfaceForm
 
 class WordList(object):
     """
