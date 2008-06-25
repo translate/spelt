@@ -23,8 +23,11 @@
 import gtk, gtk.glade
 import os
 
-from common import Configuration, _
-from models import Source, SurfaceForm
+from spelt.common  import Configuration, _
+from spelt.models  import Source, SurfaceForm
+from spelt.support import openmailto
+
+RESPONSE_OK, RESPONSE_CANCEL = range(2)
 
 class Menu(object):
     """
@@ -50,10 +53,13 @@ class Menu(object):
     def create_source_from_file(self, filename):
         """Create a model.Source for the given filename."""
         fname = os.path.split(filename)[1]
-        self.gui.dlg_source.run(fname)
+
+        if self.gui.dlg_source.run(fname) == RESPONSE_CANCEL:
+            return None
+
         name = self.gui.dlg_source.name
         desc = self.gui.dlg_source.description
-        import_user_id = self.config.options['user_id']
+        import_user_id = self.config.user['id']
 
         src = Source(
             name           = name,
@@ -67,14 +73,14 @@ class Menu(object):
         """Get and initialize widgets from the Glade object."""
         self.widgets = (
             # File menu
-            'mnu_open',
+            #'mnu_open',    # Removed
             'mnu_save',
             'mnu_saveas',
             'mnu_quit',
             # Database menu
             'mnu_emaildb',
             'mnu_import',
-            'mnu_roots',
+            #'mnu_roots',   # Removed
             # Help menu
             'mnu_about'
         )
@@ -86,7 +92,9 @@ class Menu(object):
 
     # SIGNAL HANDLERS #
     def handler_open(self):
-        """Display an "Open" dialog and try to open the file as a language database."""
+        """Display an "Open" dialog and try to open the file as a language database.
+
+            This is not used anymore, seeing as the "Open" menu item has been removed."""
         filename = self.gui.get_open_filename()
         if filename is None:
             return
@@ -96,7 +104,7 @@ class Menu(object):
             return
 
         try:
-            self.config.options['current_database'].load(filename=filename)
+            self.config.current_database.load(filename=filename)
         except exc:
             self.gui.show_error(_( 'Error loading database from "%s"') % (filename) )
             print _('Error loading database from "%s": %s') % (filename, str(exc))
@@ -108,7 +116,7 @@ class Menu(object):
     def handler_save(self):
         """Save the contents of the current open database."""
         try:
-            self.config.options['current_database'].save()
+            self.config.current_database.save()
         except exc:
             self.gui.show_error(text=str(exc), title=_('Error loading database!'))
             print _( 'Error saving database: "%s"') % (exc)
@@ -125,7 +133,7 @@ class Menu(object):
             return
 
         try:
-            self.config.options['current_database'].save(filename)
+            self.config.current_database.save(filename)
         except Exception, exc:
             self.gui.show_error('Error saving database to file %s!' % (filename))
             print _('Error saving database to %s: %s' % (filename, exc))
@@ -136,7 +144,7 @@ class Menu(object):
             self.gui.quit()
 
     def handler_emaildb(self):
-        db = self.config.options['current_database']
+        db = self.config.current_database
 
         try:
             db.save()
@@ -146,13 +154,12 @@ class Menu(object):
             return
 
         subj = _('Language database: ') + str(db).decode('utf-8')
-        os.system('xdg-email --utf8 --subject "%s" --attach "%s"' % (subj, db.filename))
-        # FIXME: The above line does not attach the file as expected (Linux/Thunderbird)!
+        openmailto.mailto('', subject=subj, attach=db.filename)
 
     def handler_import(self):
         """Import words from a text file."""
-        db = self.config.options['current_database']
-        user_id = self.config.options['user_id']
+        db = self.config.current_database
+        user_id = self.config.user['id']
         filename = self.gui.get_open_filename(_('Open word list...'))
 
         if filename is None:
@@ -184,13 +191,9 @@ class Menu(object):
         f.close()
         self.gui.reload_database()
 
-    def handler_roots(self):
-        """Show the root management window/dialog. NOT YET IMPLEMENTED!"""
-        # TODO: Implement this method
-        self.gui.show_error(_('This functionality is not yet implemented.'))
-
     def handler_about(self):
         # TODO: Show about dialog
+        self.gui.show_error(_('This functionality is not yet implemented.'))
         pass
 
     def __on_item_activated(self, menu_item):
