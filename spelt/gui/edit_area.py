@@ -216,8 +216,8 @@ class EditArea(object):
             self.cmb_root.set_active(-1)
             self.cmb_root.child.set_text('')
             self.select_pos(None) # This deselects the part of speech too.
-            self.set_sensitive(cmb_pos=False)
             return
+
         assert isinstance(root, Root)
         iter = self.root_store.get_iter_first()
 
@@ -249,7 +249,10 @@ class EditArea(object):
             # Deselect POS
             self.cmb_pos.set_active(-1)
             self.cmb_pos.child.set_text('')
+            self.set_visible(btn_ok=True, btn_add_root=False, btn_mod_root=False)
+            self.set_sensitive(btn_ok=False, cmb_pos=False)
             return
+
         assert isinstance(pos, PartOfSpeech)
         iter = self.pos_store.get_iter_first()
 
@@ -257,6 +260,8 @@ class EditArea(object):
             if self.pos_store.get_value(iter, COL_MODEL) == pos:
                 self.cmb_pos.set_active_iter(iter)
                 self.current_pos = pos
+
+                self.set_sensitive(btn_ok=True)
                 break
 
             iter = self.pos_store.iter_next(iter)
