@@ -21,16 +21,16 @@
 """Contains LanguageDB: the main model representing a language database and provides access to all its parts."""
 
 import os.path
-from lxml          import etree, objectify
+from lxml import etree, objectify
 
-from common        import *
+from spelt.common import *
 
-from model_factory import ModelFactory
-from pos           import PartOfSpeech
-from root          import Root
-from source        import Source
-from surface_form  import SurfaceForm
-from user          import User
+from spelt.models.model_factory import ModelFactory
+from spelt.models.pos           import PartOfSpeech
+from spelt.models.root          import Root
+from spelt.models.source        import Source
+from spelt.models.surface_form  import SurfaceForm
+from spelt.models.user          import User
 
 class LanguageDB(object):
     """
@@ -166,14 +166,10 @@ class LanguageDB(object):
                 if model.id == id:
                     models.append(model)
                 elif kwargs:
-                    match = True
                     for key, val in kwargs.items():
-                        if not (hasattr(model, key) and getattr(model, key) == val):
-                            match = False
-                            break
-
-                    if match:
-                        models.append(model)
+                        if hasattr(model, key) and getattr(model, key) == val:
+                            models.append(model)
+							break
 
         return models
 
@@ -279,7 +275,8 @@ class LanguageDB(object):
 
     # SPECIAL METHODS #
     def __str__(self):
-        filepart = self.filename and '[file="%s"]' % self.filename or '[no file]'
+        filepart = '[%s]' % (self.filename and os.path.split(self.filename)[1] or 'no file')
+
         return '%s[lang="%s"]%s[POS %d|R %d|SRC %d|SF %d|U %d]' % \
             (
                 self.__class__.__name__, self.lang, filepart,
