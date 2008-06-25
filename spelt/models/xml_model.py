@@ -18,10 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from lxml       import objectify
+from lxml import objectify
 
-from common     import exceptions, _
-from id_manager import IDManager
+from spelt.common import exceptions, _
+
+from spelt.models.id_manager import IDManager
 
 class XMLModel(IDManager):
     """
@@ -95,7 +96,7 @@ class XMLModel(IDManager):
         for at in self.attribs:
             if at == 'id':
                 root.set('id', str(self.id))
-            else:
+            elif getattr(self, at) is not None:
                 root.set(at, str(getattr(self, at)))
 
         for v in self.values:
