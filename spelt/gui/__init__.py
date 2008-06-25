@@ -18,10 +18,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-from gui      import GUI
-from wordlist import WordList
+from dlg_first_run import DlgFirstRun
+from dlg_source    import DlgSource
+from gui           import GUI
+from edit_area     import EditArea
+from wordlist      import WordList
 
 __all__ = [
+    'DlgFirstRun',
+    'DlgSource',
+    'EditArea',
     'GUI',
+    'Menu',
     'WordList'
 ]
