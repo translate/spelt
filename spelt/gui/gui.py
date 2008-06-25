@@ -20,33 +20,27 @@
 
 """Contains the main GUI class."""
 
-# External imports
-import gtk, gtk.glade
+import gtk, gtk.glade, os
 
-# Other sub-modules
-from common   import Configuration, _
-from models   import LanguageDB
+from spelt.common   import Configuration, _
+from spelt.models   import LanguageDB, User
 
-# From the gui package
-from dlg_source import DlgSource
-from edit_area  import EditArea
-from menu       import Menu
-from wordlist   import WordList
+from spelt.gui.dlg_first_run import DlgFirstRun
+from spelt.gui.dlg_source    import DlgSource
+from spelt.gui.edit_area     import EditArea
+from spelt.gui.menu          import Menu
+from spelt.gui.wordlist      import WordList
 
 
 class GUI(object):
     """The main GUI class. Also contains commonly used functionality."""
 
-    # CONSTRUCTOR #
-    def __init__(self):
-        self.glade = gtk.glade.XML('../share/spelt/spelt.glade')
-        self.config = Configuration()
+    RESPONSE_OK, RESPONSE_CANCEL = range(2)
 
-        # FIXME: The following values for the configuration is only for use
-        # until the Configuration class gets some functionality.
-        self.config.options['may_create_pos'] = True
-        self.config.options['previous_database_path'] = 'test_langdb.xldb'
-        self.config.options['user_id'] = 999
+    # CONSTRUCTOR #
+    def __init__(self, glade_filename):
+        self.glade = gtk.glade.XML(glade_filename)
+        self.config = Configuration()
 
         # Main window
         self.main_window = self.glade.get_widget('wnd_main')
@@ -54,10 +48,14 @@ class GUI(object):
 
         # Load last database
         db = LanguageDB(lang='')
-        self.config.options['current_database'] = db
+        self.config.current_database = db
 
-        if self.config.options.has_key('previous_database_path'):
-            db.load(self.config.options['previous_database_path'])
+        if os.path.exists(self.config.general['last_langdb_path']):
+            db.load(self.config.general['last_langdb_path'])
+        else:
+            # If we couldn't find the previous database, act as if this is a
+            # first run.
+            self.do_first_run()
 
         # Initialize other GUI components
         self.__create_dialogs()
@@ -66,6 +64,10 @@ class GUI(object):
         self.edit_area = EditArea(self.glade, self.word_list, langdb=db, gui=self)
 
         self.word_list.word_selected_handlers.append(self.check_work_done)
+
+        # Check if this is the first time the program is run
+        if self.config.user['id'] == 0:
+            self.do_first_run()
 
         self.main_window.show_all()
         self.reload_database()
@@ -136,6 +138,18 @@ class GUI(object):
         if sf is None:
             self.show_info(_('All work done!'))
 
+    def do_first_run(self):
+        dlg_firstrun = DlgFirstRun(self.glade, self)
+        if dlg_firstrun.run() != self.RESPONSE_OK:
+            self.quit()
+
+        self.config.current_database = db = dlg_firstrun.langdb
+
+        user = dlg_firstrun.langdb.find(section='users', name=dlg_firstrun.user_name)[0]
+        self.config.user['id']                  = user.id
+        self.config.general['last_langdb_path'] = db.filename
+        self.config.save()
+
     def get_open_filename(self, title=_('Select language database to open')):
         """Display an "Open" dialog and return the selected file.
             @rtype  str
@@ -145,7 +159,7 @@ class GUI(object):
         self.open_chooser.hide()
 
         if res != gtk.RESPONSE_OK:
-            return None
+            return ''
 
         return self.open_chooser.get_filename()
 
@@ -182,11 +196,11 @@ class GUI(object):
         return res == gtk.RESPONSE_YES
 
     def quit(self):
-        # TODO: self.config.save()
+        self.config.save()
         gtk.main_quit()
 
     def reload_database(self):
         """Have all sub-components reload its database information."""
-        db = self.config.options['current_database']
+        db = self.config.current_database
         self.edit_area.refresh(langdb=db)
         self.word_list.refresh(langdb=db)
