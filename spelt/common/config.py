@@ -20,15 +20,94 @@
 
 """Contains the Configuration class."""
 
-from singleton import SingletonMeta
+import locale, os
+import logging
+try:
+    import iniparse as ConfigParser
+except ImportError, e:
+    import ConfigParser
+
+from gettext import gettext as _
+
+from spelt.common.singleton import SingletonMeta
+
+
+default_config = '~/.locamotion/spelt.ini'
 
 class Configuration(object):
-    """Singleton access to the program's configuration."""
+    """Singleton access to the program's configuration.
+
+    This class is mostly based on VirTaal's Settings class."""
 
     __metaclass__ = SingletonMeta # Make this a Singleton class
 
-    def __init__(self, configFilename='config.prefs'):
-        self.options = {}
+    current_database = None # This is not really a config section, but a form of globally accessible variable.
+
+    sections = ['user', 'general', 'language']
+
+    user = {
+        'id':               '0'
+    }
+    general = {
+        'last_langdb_path': ''
+    }
+    language = {
+        'uilang':           None,
+        'sourcelang':       'en',
+        'contentlang':      None
+    }
+
+    def __init__(self, filename=default_config):
+        if not filename or '~' in filename:
+            self.filename = os.path.expanduser(default_config)
+        else:
+            self.filename = filename
+
+        try:
+            lang = locale.getlocale()[0]
+            self.language["uilang"] = lang
+            self.language["contentlang"] = lang
+        except:
+            logging.info(_("Could not get locale"))
+
+        self.parser = ConfigParser.ConfigParser()
+
+        for section in self.sections:
+            if not self.parser.has_section(section):
+                self.parser.add_section(section)
+
+        self.read();
+
+    def read(self):
+        """Read the configuration file and set the dictionaries up."""
+        self.parser.read(self.filename)
+
+        for key, value in self.parser.items("user"):
+            self.user[key] = value
+        for key, value in self.parser.items("general"):
+            self.general[key] = value
+        for key, value in self.parser.items("language"):
+            self.language[key] = value
+
+        # Cast some values to its correct types.
+        self.user['id'] = int(self.user['id'])
+
+    def save(self):
+        """Write the configuration file."""
+        for key in self.user:
+            self.parser.set("user", key, self.user[key])
+        for key in self.general:
+            self.parser.set("general", key, self.general[key])
+        for key in self.language:
+            self.parser.set("language", key, self.language[key])
+
+        # make sure that the configuration directory exists
+        project_dir = os.path.split(self.filename)[0]
+        if not os.path.isdir(project_dir):
+            os.makedirs(project_dir)
+        file = open(self.filename, 'w')
+        self.parser.write(file)
+        file.close()
 
     def __str__(self):
-        return '%s(%s)' % (self.__class__.__name__, self.options)
+        return '%s(%s)' % (self.__class__.__name__, self.filename)
