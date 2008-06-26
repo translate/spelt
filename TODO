@@ -1,8 +1,3 @@
-- Installation scripts.
-- Proper program launcher.
-- Replace debug "print" statements with proper debug logging.
-- Add normalization of Unicode with tests.
-- Document code conventions.
-  * Gtk widget naming.
+- Add normalization of Unicode with tests. Copy normalization function from Toolkit.
 - Confirm that "str(exc)" is not problematic for printing exceptions.
 - Autosave database.
