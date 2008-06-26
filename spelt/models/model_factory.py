@@ -20,6 +20,7 @@
 
 from lxml import objectify
 
+from spelt.common              import *
 from spelt.models.pos          import PartOfSpeech
 from spelt.models.root         import Root
 from spelt.models.source       import Source
@@ -48,7 +49,7 @@ class ModelFactory(object):
             @param elem: The XML element to create a model from.
             """
         if not ModelFactory.model_name_map.has_key(elem.tag):
-            raise InvalidModelError(elem.tag)
+            raise InvalidElementError(_('Invalid XML element with tag "%s"') % (elem.tag))
 
         klass = ModelFactory.model_name_map[elem.tag]
         return klass.create_from_elem(elem)
