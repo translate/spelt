@@ -192,9 +192,9 @@ class Menu(object):
         self.gui.reload_database()
 
     def handler_about(self):
-        # TODO: Show about dialog
-        self.gui.show_error(_('This functionality is not yet implemented.'))
-        pass
+        """Shows the "About" dialog. See spelt.gui.GUI.__create_dialogs()."""
+        self.gui.dlg_about.run()
+        self.gui.dlg_about.hide()
 
     def __on_item_activated(self, menu_item):
         """Signal handler for all menu items."""

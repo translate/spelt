@@ -22,8 +22,9 @@
 
 import gtk, gtk.glade, os
 
-from spelt.common   import Configuration, _
-from spelt.models   import LanguageDB, User
+from spelt.common  import ver, Configuration, _
+from spelt.models  import LanguageDB, User
+from spelt.support import openmailto
 
 from spelt.gui.dlg_first_run import DlgFirstRun
 from spelt.gui.dlg_source    import DlgSource
@@ -31,6 +32,18 @@ from spelt.gui.edit_area     import EditArea
 from spelt.gui.menu          import Menu
 from spelt.gui.wordlist      import WordList
 
+LICENSE = """This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Library General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>."""
 
 class GUI(object):
     """The main GUI class. Also contains commonly used functionality."""
@@ -133,6 +146,37 @@ class GUI(object):
 
         # Source dialog wrapper
         self.dlg_source = DlgSource(self.glade)
+
+        # About dialog
+        def on_about_url(dialog, uri, data):
+            if data == "mail":
+                openmailto.mailto(uri)
+            elif data == "url":
+                openmailto.open(uri)
+
+        self.dlg_about = gtk.AboutDialog()
+        gtk.about_dialog_set_url_hook(on_about_url, "url")
+        gtk.about_dialog_set_email_hook(on_about_url, "mail")
+        self.dlg_about.set_name("Spelt")
+        self.dlg_about.set_version(ver)
+        self.dlg_about.set_copyright(_("© Copyright 2007-2008 Zuza Software Foundation"))
+        self.dlg_about.set_comments(
+            _("A tool to categorize words from a language database according to its root.")
+        )
+        self.dlg_about.set_license(LICENSE)
+        self.dlg_about.set_website("http://translate.sourceforge.net/wiki/spelt/index")
+        self.dlg_about.set_website_label(_("Spelt website"))
+        self.dlg_about.set_authors(["Walter Leibbrandt <walter@translate.org.za>"])
+        self.dlg_about.set_translator_credits(_("translator-credits"))
+        self.dlg_about.set_icon(self.main_window.get_icon())
+        # FIXME entries that we may want to add
+        #self.dlg_about.set_logo()
+        self.dlg_about.set_documenters([
+            "Friedel Wolff <friedel@translate.org.za>",
+            "Wynand Winterbach <wynand@translate.org.za>",
+            "Walter Leibbrandt <walter@translate.org.za>"
+        ])
+        #self.dlg_about.set_artists()
 
     def check_work_done(self, sf):
         if sf is None:
