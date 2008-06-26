@@ -185,7 +185,7 @@ class LanguageDB(object):
             raise LanguageDBFormatError(_('Invalid root tag: %s' % xmlroot.tag, self))
 
         if 'lang' not in xmlroot.keys():
-            raise LanguageDBFormatError('No language code specified!', self)
+            raise LanguageDBFormatError(_('No language code specified in database!'), self)
 
         self.filename = filename
         self.lang     = xmlroot.get('lang')
@@ -195,16 +195,19 @@ class LanguageDB(object):
         for section in self.model_list_map.values():
             if section not in root_children:
                 setattr(xmlroot, section, objectify.Element(section))
-                raise LanguageDBFormatWarning('No top-level "%s" tag.' % section)
-            else:
-                for child in getattr(xmlroot, section).iterchildren():
-                    model = ModelFactory.create_model_from_elem(child)
-                    mlist = getattr(self, self.model_list_map[model.tag])
+                raise LanguageDBFormatWarning(_('No top-level "%s" XML element.') % section)
 
-                    if model in mlist:
-                        raise DuplicateModelError(str(model))
+            for child in getattr(xmlroot, section).iterchildren():
+                # FIXME: Look for a better way to test for a XML comment below
+                if child.tag == 'comment':
+                    continue # Skip XML comments
+                model = ModelFactory.create_model_from_elem(child)
+                mlist = getattr(self, self.model_list_map[model.tag])
 
-                    mlist.append(model)
+                if model in mlist:
+                    raise DuplicateModelError(str(model))
+
+                mlist.append(model)
 
     def refreshModels(self):
         """Calls refreshModelXML() on all models in the database."""
