@@ -59,6 +59,8 @@ class GUI(object):
         self.main_window = self.glade.get_widget('wnd_main')
         self.main_window.connect('destroy', lambda *w: gtk.main_quit())
 
+        self.__create_dialogs()
+
         # Load last database
         db = LanguageDB(lang='')
         self.config.current_database = db
@@ -70,8 +72,6 @@ class GUI(object):
             # first run.
             self.do_first_run()
 
-        # Initialize other GUI components
-        self.__create_dialogs()
         self.menu      = Menu(self.glade, gui=self)
         self.word_list = WordList(self.glade, langdb=db, gui=self)
         self.edit_area = EditArea(self.glade, self.word_list, langdb=db, gui=self)
