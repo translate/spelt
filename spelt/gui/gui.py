@@ -21,6 +21,7 @@
 """Contains the main GUI class."""
 
 import gtk, gtk.glade, os
+from xml.sax.saxutils import escape
 
 from spelt.common  import ver, Configuration, _
 from spelt.models  import LanguageDB, User
@@ -207,10 +208,11 @@ class GUI(object):
 
         return self.open_chooser.get_filename()
 
-    def get_save_filename(self, title=_('Select language database to open')):
+    def get_save_filename(self, title=_('Save...')):
         """Display an "Save" dialog and return the selected file.
             @rtype  str
             @return The filename selected in the "Save" dialog. None if the selection was cancelled."""
+        self.save_chooser.set_title(title)
         res = self.save_chooser.run()
         self.save_chooser.hide()
 
@@ -220,19 +222,19 @@ class GUI(object):
         return self.save_chooser.get_filename()
 
     def show_error(self, text, title=_('Error!')):
-        self.dlg_error.set_markup(text)
+        self.dlg_error.set_markup(escape(text))
         self.dlg_error.set_title(title)
         self.dlg_error.run()
         self.dlg_error.hide()
 
     def show_info(self, text, title=_('Information')):
-        self.dlg_info.set_markup(text)
+        self.dlg_info.set_markup(escape(text))
         self.dlg_info.set_title(title)
         self.dlg_info.run()
         self.dlg_info.hide()
 
     def prompt(self, text, title=_('Prompt')):
-        self.dlg_prompt.set_markup(text)
+        self.dlg_prompt.set_markup(escape(text))
         self.dlg_prompt.set_title(title)
         res = self.dlg_prompt.run()
         self.dlg_prompt.hide()
