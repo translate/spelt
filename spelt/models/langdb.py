@@ -133,7 +133,14 @@ class LanguageDB(object):
         self.users.append(usr)
         self.xmlroot.users.append(usr.to_xml())
 
+    def elem_is_xml_comment(self, elem):
+        """Checks whether the parameter represents an XML comment (eg.
+            "<!-- this is a XML comment. -->")
+            """
+        return isinstance(elem, objectify.StringElement) and elem.tag == 'comment' and str(elem) == ''
+
     def __create_root(self):
+        """Creates a <language_database> root tag (self.xmlroot) and adds the main sections."""
         self.xmlroot                 = objectify.Element('language_database', lang=self.lang)
         self.xmlroot.parts_of_speech = objectify.Element('parts_of_speech')
         self.xmlroot.roots           = objectify.Element('roots')
@@ -198,7 +205,7 @@ class LanguageDB(object):
                 raise LanguageDBFormatWarning(_('No top-level "%s" XML element.') % section)
 
             for child in getattr(xmlroot, section).iterchildren():
-                if isinstance(child, objectify.StringElement) and child.tag == 'comment' and str(child) == '':
+                if self.elem_is_xml_comment(child):
                     continue # Skip XML comments
                 model = ModelFactory.create_model_from_elem(child)
                 mlist = getattr(self, self.model_list_map[model.tag])
@@ -237,6 +244,8 @@ class LanguageDB(object):
         # First we delete the lxml element from self.xmlroot
         found = False
         for elem in xml_section.getchildren():
+            if self.elem_is_xml_comment(elem):
+                continue # Skip comments
             if int(elem.get('id')) == id:
                 xml_section.remove(elem)
                 found = True
