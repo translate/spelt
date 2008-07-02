@@ -54,6 +54,20 @@ class DlgSource(object):
         self.__init_widgets()
 
     # METHODS #
+    def clear(self):
+        self.filename    = ''
+        self.name        = ''
+        self.description = ''
+
+    def has_valid_input(self):
+        """Determines whether or not the dialog's fields constitute complete
+            values.
+
+            @rtype:  bool
+            @return: Whether or not there is sufficiently correct information.
+            """
+        return len(self.filename) > 0 and len(self.name) > 0
+
     def run(self, filename=''):
         self.filename    = filename
         self.name        = ''
