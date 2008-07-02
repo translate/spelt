@@ -52,13 +52,24 @@ class Menu(object):
     # METHODS #
     def create_source_from_file(self, filename):
         """Create a model.Source for the given filename."""
-        fname = os.path.split(filename)[1]
+        fname      = os.path.split(filename)[1]
+        dlg_source = self.gui.dlg_source
 
-        if self.gui.dlg_source.run(fname) == RESPONSE_CANCEL:
+        dlg_source.clear()
+
+        if dlg_source.run(fname) == RESPONSE_CANCEL:
             return None
 
-        name = self.gui.dlg_source.name
-        desc = self.gui.dlg_source.description
+        while not dlg_source.has_valid_input():
+            self.gui.show_error(
+                _('Please fill in a name for the source'),
+                title='Incomplete information'
+            )
+            if dlg_source.run(fname) == RESPONSE_CANCEL:
+                return None
+
+        name = dlg_source.name
+        desc = dlg_source.description
         import_user_id = self.config.user['id']
 
         src = Source(
@@ -117,8 +128,8 @@ class Menu(object):
         """Save the contents of the current open database."""
         try:
             self.config.current_database.save()
-        except exc:
-            self.gui.show_error(text=str(exc), title=_('Error loading database!'))
+        except Exception, exc:
+            self.gui.show_error(text=str(exc), title=_('Error saving database!'))
             print _( 'Error saving database: "%s"') % (exc)
             return
 
@@ -135,8 +146,8 @@ class Menu(object):
         try:
             self.config.current_database.save(filename)
         except Exception, exc:
-            self.gui.show_error('Error saving database to file %s!' % (filename))
-            print _('Error saving database to %s: %s' % (filename, exc))
+            self.gui.show_error(text=str(exc), title=_('Error saving database to file %s') % (filename))
+            print _('Error saving database to %s: %s') % (filename, exc)
 
     def handler_quit(self):
         """Quit the application after confirmation."""
@@ -166,6 +177,10 @@ class Menu(object):
             return
 
         src = self.create_source_from_file(filename)
+
+        if src is None:
+            return
+
         db.add_source(src)
 
         f = open(filename, 'r')
