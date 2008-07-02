@@ -105,20 +105,19 @@ class GUI(object):
             buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN,gtk.RESPONSE_OK)
         )
 
-        filter = gtk.FileFilter()
-        filter.set_name(_('All files'))
-        filter.add_pattern('*')
+        all_filter = gtk.FileFilter()
+        all_filter.set_name(_('All files'))
+        all_filter.add_pattern('*')
 
-        self.open_chooser.add_filter(filter)
-        self.save_chooser.add_filter(filter)
+        langdb_filter = gtk.FileFilter()
+        langdb_filter.set_name(_('Language Database'))
+        langdb_filter.add_mime_type('text/xml')
+        langdb_filter.add_pattern('*.' + LanguageDB.FILE_EXTENSION)
 
-        filter = gtk.FileFilter()
-        filter.set_name(_('Language Databases'))
-        filter.add_mime_type('text/xml')
-        filter.add_pattern('*.' + LanguageDB.FILE_EXTENSION)
-
-        self.open_chooser.add_filter(filter)
-        self.save_chooser.add_filter(filter)
+        self.open_chooser.add_filter(all_filter)
+        self.open_chooser.add_filter(langdb_filter)
+        self.save_chooser.add_filter(langdb_filter)
+        self.save_chooser.add_filter(all_filter)
 
         # Message dialog
         self.dlg_error = gtk.MessageDialog(
