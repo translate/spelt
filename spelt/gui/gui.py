@@ -169,7 +169,7 @@ class GUI(object):
         self.dlg_about.set_authors(["Walter Leibbrandt <walter@translate.org.za>"])
         self.dlg_about.set_translator_credits(_("translator-credits"))
         self.dlg_about.set_icon(self.main_window.get_icon())
-        # FIXME entries that we may want to add
+        # XXX entries that we may want to add (commented out):
         #self.dlg_about.set_logo()
         self.dlg_about.set_documenters([
             "Friedel Wolff <friedel@translate.org.za>",
@@ -203,7 +203,7 @@ class GUI(object):
         self.open_chooser.hide()
 
         if res != gtk.RESPONSE_OK:
-            return ''
+            return None
 
         return self.open_chooser.get_filename()
 
