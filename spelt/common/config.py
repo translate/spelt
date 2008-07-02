@@ -43,18 +43,14 @@ class Configuration(object):
 
     current_database = None # This is not really a config section, but a form of globally accessible variable.
 
-    sections = ['user', 'general', 'language']
+    sections = ['user', 'general']
 
     user = {
-        'id':               '0'
+        'id':               '0',
+        'uilang':           None
     }
     general = {
         'last_langdb_path': ''
-    }
-    language = {
-        'uilang':           None,
-        'sourcelang':       'en',
-        'contentlang':      None
     }
 
     def __init__(self, filename=default_config):
@@ -65,8 +61,7 @@ class Configuration(object):
 
         try:
             lang = locale.getlocale()[0]
-            self.language["uilang"] = lang
-            self.language["contentlang"] = lang
+            self.user["uilang"] = lang
         except:
             logging.info(_("Could not get locale"))
 
@@ -86,8 +81,6 @@ class Configuration(object):
             self.user[key] = value
         for key, value in self.parser.items("general"):
             self.general[key] = value
-        for key, value in self.parser.items("language"):
-            self.language[key] = value
 
         # Cast some values to its correct types.
         self.user['id'] = int(self.user['id'])
@@ -98,8 +91,6 @@ class Configuration(object):
             self.parser.set("user", key, self.user[key])
         for key in self.general:
             self.parser.set("general", key, self.general[key])
-        for key in self.language:
-            self.parser.set("language", key, self.language[key])
 
         # make sure that the configuration directory exists
         project_dir = os.path.split(self.filename)[0]
