@@ -268,18 +268,25 @@ class LanguageDB(object):
         if filename is None:
             raise IOError('No filename given!')
 
+        # Make sure that we can successfully create the XML text before we open
+        # (and possibly truncate) the file.
+        try:
+            xmlstring = etree.tostring(
+                self.xmlroot,
+                pretty_print=True,
+                xml_declaration=True,
+                encoding='utf-8'
+            )
+        except:
+            raise ValueError(_('Unable to create string from XML tree.'))
+
         f = open(filename, 'w')
         self.refreshModels()
 
         # FIXME (Bug #423): Find a way to make deannotate() below actually remove those
         # annoying pytype and xsi attribs.
         objectify.deannotate(self.xmlroot)
-        print >> f, etree.tostring(
-            self.xmlroot,
-            pretty_print=True,
-            xml_declaration=True,
-            encoding='utf-8'
-        )
+        print >> f, xmlstring
         f.close()
 
         self.filename = filename
