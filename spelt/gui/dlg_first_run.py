@@ -147,6 +147,7 @@ class DlgFirstRun(object):
             if not usersfound:
                 u = User(name=self.user_name)
                 self.langdb.add_user(u)
+                self.langdb.save()
 
             self.langdb_path_confirm = self.langdb.filename
             self.lang_confirm        = self.langdb.lang
