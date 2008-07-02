@@ -198,8 +198,7 @@ class LanguageDB(object):
                 raise LanguageDBFormatWarning(_('No top-level "%s" XML element.') % section)
 
             for child in getattr(xmlroot, section).iterchildren():
-                # FIXME: Look for a better way to test for a XML comment below
-                if child.tag == 'comment':
+                if isinstance(child, objectify.StringElement) and child.tag == 'comment' and str(child) == '':
                     continue # Skip XML comments
                 model = ModelFactory.create_model_from_elem(child)
                 mlist = getattr(self, self.model_list_map[model.tag])
