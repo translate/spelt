@@ -104,6 +104,29 @@ class SurfaceForm(XMLModel):
 
         self.validate_data()
 
+    def to_xml(self):
+        """Create an lxml.objectify.ObjectifiedElement from the model. This
+            method was added to gain a little bit of speed over the more general
+            spelt.models.XMLModel.to_xml().
+
+            @rtype:  objectify.Element
+            @return: The constructed XML element."""
+        self.validate_data()
+
+        root = objectify.Element(self.tag)
+
+        root.value  = self.value
+        root.status = self.status
+        root.set('id', str(self.id))
+        root.set('user_id', str(self.user_id))
+        root.set('date', self.date)
+        if self.source_id is not None:
+            root.set('source_id', str(self.source_id))
+        if self.root_id is not None:
+            root.set('root_id', str(self.root_id))
+
+        return root
+
     def validate_data(self):
         """See XMLModel.validate_data()."""
         assert isinstance(unicode(self.value), basestring) and len(self.value) > 0
@@ -129,7 +152,7 @@ class SurfaceForm(XMLModel):
 
     # SPECIAL METHODS #
     def __eq__(self, rhs):
-        return self.value == rhs.value and self.root_id == rhs.root_id
+        return hash(self) == hash(rhs)
 
     def __hash__(self):
-        return self.id
+        return hash('%s_%s' % (self.value, self.root_id))
