@@ -177,33 +177,10 @@ class Menu(object):
             return
 
         src = self.create_source_from_file(filename)
-
         if src is None:
             return
 
-        db.add_source(src)
-
-        f = open(filename, 'r')
-        line = f.readline()
-
-        while line:
-            # Ignore comments:
-            if line.lstrip().startswith('#'):
-                continue
-
-            word = line.rstrip()
-
-            # Make sure we don't add a word that already exists:
-            if db.find(section='surface_forms', value=word):
-                line = f.readline()
-                continue
-
-            db.add_surface_form(
-                SurfaceForm(value=word, status='todo', user_id=user_id, source_id=src.id)
-            )
-            line = f.readline()
-
-        f.close()
+        db.import_source(src)
         self.gui.reload_database()
 
     def handler_about(self):

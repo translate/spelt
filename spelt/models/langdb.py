@@ -139,15 +139,6 @@ class LanguageDB(object):
             """
         return isinstance(elem, objectify.StringElement) and elem.tag == 'comment' and str(elem) == ''
 
-    def __create_root(self):
-        """Creates a <language_database> root tag (self.xmlroot) and adds the main sections."""
-        self.xmlroot                 = objectify.Element('language_database', lang=self.lang)
-        self.xmlroot.parts_of_speech = objectify.Element('parts_of_speech')
-        self.xmlroot.roots           = objectify.Element('roots')
-        self.xmlroot.sources         = objectify.Element('sources')
-        self.xmlroot.surface_forms   = objectify.Element('surface_forms')
-        self.xmlroot.users           = objectify.Element('users')
-
     def find(self, id=0, section=None, **kwargs):
         """A generic method to find any of the models contained in the current language database.
             If kwargs are specified, a model will match if ANY of the pairs match.
@@ -180,7 +171,46 @@ class LanguageDB(object):
 
         return models
 
-    def load(self, filename='lang.'+FILE_EXTENSION):
+    def import_source(self, source):
+        """Import the words from the given source on a "one word per line"
+            basis. The parameter source is also added to the database.
+
+            @type  source: spelt.models.Source
+            @param source: The Source model containing the filename of to read
+                    the list of words from.
+            """
+        self.add_source(src)
+
+        f = open(filename, 'r')
+        line = f.readline()
+
+        while line:
+            # Ignore comments:
+            if line.lstrip().startswith('#'):
+                continue
+
+            try:
+                word = unicode(line.rstrip())
+            except UnicodeError:
+                word = unicode(line.rstrip(), 'latin-1')
+
+            ## Make sure we don't add a word that already exists:
+            #if db.find(section='surface_forms', value=word):
+            #    line = f.readline()
+            #    continue
+
+            try:
+                db.add_surface_form(
+                    SurfaceForm(value=word, status='todo', user_id=user_id, source_id=src.id)
+                )
+            except Exception, exc:
+                print 'Error adding surface form: %s: %s' % (exc.__class__.__name__, exc)
+
+            line = f.readline()
+
+        f.close()
+
+    def load(self, filename):
         """Load a language database from the specified file.
             @type  filename: basestring
             @param filename: The full path to the file to load the language database from.
@@ -290,6 +320,15 @@ class LanguageDB(object):
         f.close()
 
         self.filename = filename
+
+    def __create_root(self):
+        """Creates a <language_database> root tag (self.xmlroot) and adds the main sections."""
+        self.xmlroot                 = objectify.Element('language_database', lang=self.lang)
+        self.xmlroot.parts_of_speech = objectify.Element('parts_of_speech')
+        self.xmlroot.roots           = objectify.Element('roots')
+        self.xmlroot.sources         = objectify.Element('sources')
+        self.xmlroot.surface_forms   = objectify.Element('surface_forms')
+        self.xmlroot.users           = objectify.Element('users')
 
     # SPECIAL METHODS #
     def __str__(self):
