@@ -106,7 +106,7 @@ class SurfaceForm(XMLModel):
 
     def validate_data(self):
         """See XMLModel.validate_data()."""
-        assert isinstance(unicode(self.value), basestring) and len(unicode(self.value)) > 0
+        assert isinstance(unicode(self.value), basestring) and len(self.value) > 0
         assert isinstance(str(self.status), str)           and self.status in VALID_STATUSES
         assert isinstance(self.id, int)                    and self.id > 0
         assert isinstance(self.user_id, int)               and self.user_id > 0
