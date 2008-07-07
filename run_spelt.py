@@ -35,10 +35,7 @@ option_list = [
                 help=_("Perform profiling, storing the result to the supplied filename.")),
     make_option("--log",
                 action="store", type="string", dest="log",
-                help=_("Turn on logging, storing the result to the supplied filename.")),
-    make_option("--config",
-                action="store", type="string", dest="config",
-                help=_("Use the configuration file given by the supplied filename.")),
+                help=_("Turn on logging, storing the result to the supplied filename."))
 ]
 parser = OptionParser(option_list=option_list, usage=usage)
 
@@ -54,11 +51,11 @@ def run_spelt():
 
 def profile(profile_file):
     import cProfile
-    import source_tree_infrastructure.lsprofcalltree as lsprofcalltree
+    import lsprofcalltree
 
     logging.info('Staring profiling run')
     profiler = cProfile.Profile()
-    profiler.run('run_spelt()')
+    profiler.runcall(run_spelt)
 
     k_cache_grind = lsprofcalltree.KCacheGrind(profiler)
     k_cache_grind.output(profile_file)
@@ -79,7 +76,7 @@ def main(argv):
 
     if options.profile != None:
         try:
-            profile(open(options.profile, 'w+'))
+            profile(open(options.profile, 'wb'))
         except IOError:
             parser.error(_("Could not open profile file '%s'") % options.profile)
     else:
