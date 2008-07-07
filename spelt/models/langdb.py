@@ -65,7 +65,7 @@ class LanguageDB(object):
             """
         self.filename = None
         self.lang = lang
-        self.sections = dict(zip( self.model_list_map.values(), map(lambda x: [], self.model_list_map.values()) ))
+        self.sections = dict(zip( self.model_list_map.values(), map(lambda x: set(), self.model_list_map.values()) ))
 
         if not filename is None and os.path.exists(filename):
             self.load(filename)
@@ -83,7 +83,7 @@ class LanguageDB(object):
         if pos in self.parts_of_speech:
             raise DuplicateModelError(str(pos))
 
-        self.parts_of_speech.append(pos)
+        self.parts_of_speech.add(pos)
         self.xmlroot.parts_of_speech.append(pos.to_xml())
 
     def add_root(self, root):
@@ -94,7 +94,7 @@ class LanguageDB(object):
         if root in self.roots:
             raise DuplicateModelError(str(root))
 
-        self.roots.append(root)
+        self.roots.add(root)
         self.xmlroot.roots.append(root.to_xml())
 
     def add_source(self, src):
@@ -106,7 +106,7 @@ class LanguageDB(object):
         if src in self.sources:
             raise DuplicateModelError(str(src))
 
-        self.sources.append(src)
+        self.sources.add(src)
         self.xmlroot.sources.append(src.to_xml())
 
     def add_surface_form(self, sf):
@@ -118,7 +118,7 @@ class LanguageDB(object):
         if sf in self.surface_forms:
             raise DuplicateModelError(str(sf))
 
-        self.surface_forms.append(sf)
+        self.surface_forms.add(sf)
         self.xmlroot.surface_forms.append(sf.to_xml())
 
     def add_user(self, usr):
@@ -130,7 +130,7 @@ class LanguageDB(object):
         if usr in self.users:
             raise DuplicateModelError(str(usr))
 
-        self.users.append(usr)
+        self.users.add(usr)
         self.xmlroot.users.append(usr.to_xml())
 
     def elem_is_xml_comment(self, elem):
@@ -239,12 +239,12 @@ class LanguageDB(object):
                 if self.elem_is_xml_comment(child):
                     continue # Skip XML comments
                 model = ModelFactory.create_model_from_elem(child)
-                mlist = getattr(self, self.model_list_map[model.tag])
+                mset = getattr(self, self.model_list_map[model.tag])
 
-                if model in mlist:
+                if model in mset:
                     raise DuplicateModelError(str(model))
 
-                mlist.append(model)
+                mset.add(model)
 
     def refreshModels(self):
         """Calls refreshModelXML() on all models in the database."""
