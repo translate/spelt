@@ -171,7 +171,7 @@ class LanguageDB(object):
 
         return models
 
-    def import_source(self, source):
+    def import_source(self, src):
         """Import the words from the given source on a "one word per line"
             basis. The parameter source is also added to the database.
 
@@ -180,8 +180,9 @@ class LanguageDB(object):
                     the list of words from.
             """
         self.add_source(src)
+        user_id = src.import_user_id
 
-        f = open(filename, 'r')
+        f = open(src.filename, 'r')
         line = f.readline()
 
         while line:
@@ -200,7 +201,7 @@ class LanguageDB(object):
             #    continue
 
             try:
-                db.add_surface_form(
+                self.add_surface_form(
                     SurfaceForm(value=word, status='todo', user_id=user_id, source_id=src.id)
                 )
             except Exception, exc:
