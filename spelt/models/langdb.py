@@ -114,7 +114,7 @@ class LanguageDB(object):
             @type  sf: SurfaceForm
             @param sf: The surface form model to add to the database.
             """
-        assert isinstance(sf, SurfaceForm)
+        #assert isinstance(sf, SurfaceForm)
         if sf in self.surface_forms:
             raise DuplicateModelError(str(sf))
 
@@ -171,7 +171,7 @@ class LanguageDB(object):
 
         return models
 
-    def import_source(self, src):
+    def import_source(self, src, filename=None):
         """Import the words from the given source on a "one word per line"
             basis. The parameter source is also added to the database.
 
@@ -179,10 +179,13 @@ class LanguageDB(object):
             @param source: The Source model containing the filename of to read
                     the list of words from.
             """
+        if filename is None:
+            filename = src.filename
+
         self.add_source(src)
         user_id = src.import_user_id
 
-        f = open(src.filename, 'r')
+        f = open(filename, 'r')
         line = f.readline()
 
         while line:

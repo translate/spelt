@@ -180,7 +180,7 @@ class Menu(object):
         if src is None:
             return
 
-        db.import_source(src)
+        db.import_source(src, filename=filename)
         self.gui.reload_database()
 
     def handler_about(self):
