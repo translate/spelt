@@ -46,11 +46,11 @@ class Configuration(object):
     sections = ['user', 'general']
 
     user = {
-        'id':               '0',
-        'uilang':           None
+        'id': '0'
     }
     general = {
-        'last_langdb_path': ''
+        'last_langdb_path': '',
+        'uilang': None
     }
 
     def __init__(self, filename=default_config):
@@ -61,7 +61,7 @@ class Configuration(object):
 
         try:
             lang = locale.getlocale()[0]
-            self.user["uilang"] = lang
+            self.general["uilang"] = lang
         except:
             logging.info(_("Could not get locale"))
 
