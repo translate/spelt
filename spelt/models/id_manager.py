@@ -49,7 +49,7 @@ class IDManager(object):
     # CONSTRUCTOR #
     def __init__(self):
         if not hasattr(self.__class__, 'ids'):
-            self.__class__.ids = []
+            self.__class__.ids = set()
         if not hasattr(self.__class__, 'max_id'):
             self.__class__.max_id = 0
         self._id = 0
@@ -76,14 +76,14 @@ class IDManager(object):
             if requested not in cls.ids:
                 if requested > cls.max_id:
                     cls.max_id = requested
-                cls.ids.append(requested)
+                cls.ids.add(requested)
                 # DEBUG PRINTING: # print '%s(%d) <= %d' % (cls.__name__, cls.max_id, requested)
                 return requested
             elif strict:
                 raise IDUsedError(str(requested))
 
         cls.max_id += 1
-        cls.ids.append(cls.max_id)
+        cls.ids.add(cls.max_id)
         # DEBUG PRINTING: # print '%s(%d) <= *%d' % (cls.__name__, cls.max_id, cls.max_id)
         return cls.max_id
 
@@ -98,7 +98,7 @@ class IDManager(object):
         cls.ids.remove(id)
 
         if id == cls.max_id:
-            cls.max_id = cls.ids and max(cls.ids) or 0
+            cls.max_id -= 1
 
     @classmethod
     def is_used_id(cls, id):
