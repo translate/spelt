@@ -52,6 +52,7 @@ classifiers = [
 options = {
     'data_files': [
         (TARGET_DATA_DIR, glob.glob(path.join("share", "spelt", "*"))),
+        (TARGET_DATA_DIR, ['lsprofcalltree.py', 'skeldb.xldb', 'TODO'])
     ],
     'scripts': [
         "run_spelt.py"
