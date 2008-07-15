@@ -285,7 +285,7 @@ def main(options):
           author="Translate.org.za",
           author_email="translate-devel@lists.sourceforge.net",
           url="http://translate.sourceforge.net/wiki/spelt/index",
-          download_url="http://sourceforge.net/project/platformdownload.php?group_id=91920",
+          download_url="http://translate.sourceforge.net/releases/spelt/",
           platforms=["any"],
           classifiers=classifiers,
           **options)
