@@ -305,6 +305,7 @@ class LanguageDB(object):
         # Make sure that we can successfully create the XML text before we open
         # (and possibly truncate) the file.
         try:
+            self.refreshModels()
             xmlstring = etree.tostring(
                 self.xmlroot,
                 pretty_print=True,
@@ -315,7 +316,6 @@ class LanguageDB(object):
             raise ValueError(_('Unable to create string from XML tree.'))
 
         f = open(filename, 'w')
-        self.refreshModels()
 
         # FIXME (Bug #423): Find a way to make deannotate() below actually remove those
         # annoying pytype and xsi attribs.
