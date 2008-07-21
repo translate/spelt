@@ -62,7 +62,12 @@ class WordList(object):
         self.store.clear()
         # TODO: Replace next line with one supporting filters.
         # Currently only surface forms with status == 'todo' are filtered.
-        [self.store.append([model]) for model in self.langdb.surface_forms if model.status == 'todo']
+        #[self.store.append([model]) for model in self.langdb.surface_forms if model.status == 'todo']
+        sforms = [model for model in self.langdb.surface_forms if model.status == 'todo']
+        sforms.sort(cmp=lambda x, y: x.id - y.id)
+
+        for sf in sforms:
+            self.store.append([sf])
 
         # Now that the TreeView's model is filled, select the first row...
         iter = self.store.get_iter_first()
