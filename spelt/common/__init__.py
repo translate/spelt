@@ -20,26 +20,19 @@
 
 import gettext, pygtk
 
-from spelt.__version__ import ver
+from spelt.__version__ import ver as __version__
 
 from spelt.common.config     import Configuration
 from spelt.common.exceptions import *
 
 pygtk.require("2.0")
 _ = gettext.gettext
-x_generator = 'Spelt ' + ver
+x_generator = 'Spelt ' + __version__
 
 __all__ = [
     '_',
-    'ver',
+    'exceptions',
+    '__version__',
     'x_generator',
-    'Configuration',
-    'DuplicateModelError',
-    'IDUsedError',
-    'InvalidElementError',
-    'InvalidSectionError',
-    'LanguageDBFormatError',
-    'LanguageDBFormatWarning',
-    'UnknownIDError',
-    'UnknownModelError'
+    'Configuration'
 ]
