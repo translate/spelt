@@ -23,7 +23,7 @@
 import gtk, gtk.glade, os
 from xml.sax.saxutils import escape
 
-from spelt.common  import ver, Configuration, _
+from spelt.common  import Configuration, __version__, _
 from spelt.models  import LanguageDB, User
 from spelt.support import openmailto
 
@@ -158,7 +158,7 @@ class GUI(object):
         gtk.about_dialog_set_url_hook(on_about_url, "url")
         gtk.about_dialog_set_email_hook(on_about_url, "mail")
         self.dlg_about.set_name("Spelt")
-        self.dlg_about.set_version(ver)
+        self.dlg_about.set_version(__version__)
         self.dlg_about.set_copyright(_("© Copyright 2007-2008 Zuza Software Foundation"))
         self.dlg_about.set_comments(
             _("A tool to categorize words from a language database according to its root.")
