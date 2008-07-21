@@ -53,7 +53,7 @@ class TestUser:
         factory method.
         """
         elem = objectify.parse(TestUser.xml).getroot()
-        u = User.create_from_elem(elem)
+        u = User(elem=elem)
 
         assert u.id == 5
         assert u.name == u'Bongani Buthelêzi'

@@ -52,4 +52,4 @@ class ModelFactory(object):
             raise InvalidElementError(_('Invalid XML element with tag "%s"') % (elem.tag))
 
         klass = ModelFactory.model_name_map[elem.tag]
-        return klass.create_from_elem(elem)
+        return klass(elem=elem)

@@ -35,8 +35,12 @@ class TestXMLModel:
         """)
 
     def __init__(self):
-        self.model = XMLModel('person', values=['height', 'weight', 'notes'], attribs=['sex', 'race'])
-        self.model.from_xml(objectify.parse(TestXMLModel.xml).getroot())
+        self.model = XMLModel(
+            'person',
+            values=['height', 'weight', 'notes'],
+            attribs=['sex', 'race'],
+            elem=objectify.parse(TestXMLModel.xml).getroot()
+        )
 
     def test_from_xml(self):
         """
@@ -55,15 +59,13 @@ class TestXMLModel:
         lxml.objectify.ObjectifiedElement used to create a XMLModel and the element
         returned by to_xml().
         """
-        fromroot = objectify.parse(TestXMLModel.xml).getroot()
-        self.model.from_xml(fromroot)
-        toroot = self.model.to_xml()
+        toroot = self.model.elem
 
-        assert fromroot.get('sex') == toroot.get('sex')
-        assert fromroot.get('race') == toroot.get('race')
-        assert fromroot.height == toroot.height
-        assert fromroot.weight == toroot.weight
-        assert fromroot.notes == toroot.notes
+        assert self.model.sex    == toroot.get('sex')
+        assert self.model.race   == toroot.get('race')
+        assert self.model.height == toroot.height
+        assert self.model.weight == toroot.weight
+        assert self.model.notes  == toroot.notes
 
 if __name__ == '__main__':
     test = TestXMLModel()

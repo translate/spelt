@@ -28,7 +28,7 @@ class PartOfSpeech(XMLModel):
     """
 
     # CONSTRUCTORS #
-    def __init__(self, name=u'', shortcut=u'', remarks=u'', id=0):
+    def __init__(self, name=None, shortcut=None, remarks=None, id=0, elem=None):
         """Constructor.
             @type  name:     basestring
             @param name:     Name of the part-of-spe (default None)
@@ -39,52 +39,42 @@ class PartOfSpeech(XMLModel):
             @type  id:       int
             @param id:       Unique identifier of this part-of-speech (default None)
             """
-        assert isinstance(name, basestring)
-        assert isinstance(shortcut, basestring)
-        assert isinstance(remarks, basestring)
+        assert name is None or isinstance(name, basestring)
+        assert shortcut is None or isinstance(shortcut, basestring)
+        assert remarks is None or isinstance(remarks, basestring)
         assert isinstance(id, int)
 
         super(PartOfSpeech, self).__init__(
             tag='part_of_speech',
             values=['name', 'shortcut', 'remarks'],
-            attribs=['id']
+            attribs=['id'],
+            elem=elem
         )
 
-        self.name     = name
-        self.shortcut = shortcut
-        self.remarks  = remarks
-        self.id       = id
+        if elem is None:
+            self.name = name
+            self.shortcut = shortcut
+            self.remarks = remarks
+            self.id = id
+        else:
+            if not hasattr(self, 'name'):
+                self.name = name
+            if not hasattr(self, 'shortcut'):
+                self.shortcut = shortcut
+            if not hasattr(self, 'remarks'):
+                self.remarks = remarks
+            if not hasattr(self, 'id'):
+                self.id = id
+            else:
+                # Make sure that the ID is registered with the ID manager.
+                self.id = self.id
 
     # METHODS #
-    def from_xml(self, elem):
-        """
-        Calls XMLModel.from_xml(elem) and then converts the 'id' member to int.
-        """
-        try: super(PartOfSpeech, self).from_xml(elem)
-        except AssertionError:
-            pass
-
-        self.validate_data()
-
     def validate_data(self):
         """See XMLModel.validate_data()."""
         assert len(self.name) > 0
         assert self.shortcut is None or len(self.shortcut) > 0
         assert isinstance(self.id, int)
-
-    # CLASS/STATIC METHODS #
-    @staticmethod
-    def create_from_elem(elem):
-        """Factory method to create a PartOfSpeech object from a lxml.objectify.ObjectifiedElement.
-            @type  elem: lxml.objectify.ObjectifiedElement
-            @param elem: The element to read XML information from.
-            @rtype:      PartOfSpeech
-            @return:     An instance containing the data loaded from elem.
-            """
-        assert isinstance(elem, objectify.ObjectifiedElement)
-        pos = PartOfSpeech()
-        pos.from_xml(elem)
-        return pos
 
     # SPECIAL METHODS #
     def __eq__(self, rhs):

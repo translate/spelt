@@ -28,40 +28,35 @@ class User(XMLModel):
     """
 
     # CONSTRUCTORS #
-    def __init__(self, name='<unknown>', id=0):
+    def __init__(self, name='<unknown>', id=0, elem=None):
         """Constructor.
             @type  name: basestring
             @param name: User's name (default None)
             @type  id: int
             @param id: The user's unique identifier (default None)
             """
-        assert isinstance(name, basestring)
+        assert name is None or isinstance(name, basestring)
         assert isinstance(id, int)
 
-        super(User, self).__init__(tag='user', values=['name'], attribs=['id'])
+        super(User, self).__init__(tag='user', values=['name'], attribs=['id'], elem=elem)
 
-        self.name = name
-        self.id   = id
+        if elem is None:
+            self.name = name
+            self.id   = id
+        else:
+            if not hasattr(self, 'name'):
+                self.name = name
+            if not hasattr(self, 'id'):
+                self.id = id
+            else:
+                # Make sure that the ID is registered with the ID manager.
+                self.id = self.id
 
     # METHODS #
     def validate_data(self):
         """See XMLModel.validate_data()."""
         assert isinstance(self.id, int)
         assert isinstance(unicode(self.name), basestring) and len(unicode(self.name)) > 0
-
-    # CLASS/STATIC METHODS #
-    @staticmethod
-    def create_from_elem(elem):
-        """Factory method to create a User object from a obj.ObjectifiedElement.
-            @type  elem: lxml.objectify.ObjectifiedElement
-            @param elem: The element to read XML information from.
-            @rtype:      User
-            @return:     An instance containing the data loaded from elem.
-            """
-        assert isinstance(elem, objectify.ObjectifiedElement)
-        u = User()
-        u.from_xml(elem)
-        return u
 
     # SPECIAL METHODS #
     def __eq__(self, rhs):

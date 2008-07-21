@@ -20,6 +20,7 @@
 
 """Contains LanguageDB: the main model representing a language database and provides access to all its parts."""
 
+import datetime
 import os.path
 from lxml import etree, objectify
 
@@ -81,10 +82,10 @@ class LanguageDB(object):
             """
         assert isinstance(pos, PartOfSpeech)
         if pos in self.parts_of_speech:
-            raise DuplicateModelError(str(pos))
+            raise exceptions.DuplicateModelError(str(pos))
 
         self.parts_of_speech.add(pos)
-        self.xmlroot.parts_of_speech.append(pos.to_xml())
+        self.xmlroot.parts_of_speech.append(pos.elem)
 
     def add_root(self, root):
         """Add a word root to the database.
@@ -92,10 +93,10 @@ class LanguageDB(object):
             @param root: The word root model to add to the database.
             """
         if root in self.roots:
-            raise DuplicateModelError(str(root))
+            raise exceptions.DuplicateModelError(str(root))
 
         self.roots.add(root)
-        self.xmlroot.roots.append(root.to_xml())
+        self.xmlroot.roots.append(root.elem)
 
     def add_source(self, src):
         """Add a source to the database.
@@ -104,10 +105,10 @@ class LanguageDB(object):
             """
         assert isinstance(src, Source)
         if src in self.sources:
-            raise DuplicateModelError(str(src))
+            raise exceptions.DuplicateModelError(str(src))
 
         self.sources.add(src)
-        self.xmlroot.sources.append(src.to_xml())
+        self.xmlroot.sources.append(src.elem)
 
     def add_surface_form(self, sf):
         """Add a surface form model to the database.
@@ -116,10 +117,10 @@ class LanguageDB(object):
             """
         #assert isinstance(sf, SurfaceForm)
         if sf in self.surface_forms:
-            raise DuplicateModelError(str(sf))
+            raise exceptions.DuplicateModelError(str(sf))
 
         self.surface_forms.add(sf)
-        self.xmlroot.surface_forms.append(sf.to_xml())
+        self.xmlroot.surface_forms.append(sf.elem)
 
     def add_user(self, usr):
         """Add a user to the database.
@@ -128,10 +129,10 @@ class LanguageDB(object):
             """
         assert isinstance(usr, User)
         if usr in self.users:
-            raise DuplicateModelError(str(usr))
+            raise exceptions.DuplicateModelError(str(usr))
 
         self.users.add(usr)
-        self.xmlroot.users.append(usr.to_xml())
+        self.xmlroot.users.append(usr.elem)
 
     def elem_is_xml_comment(self, elem):
         """Checks whether the parameter represents an XML comment (eg.
@@ -180,7 +181,7 @@ class LanguageDB(object):
                     the list of words from.
             """
         if filename is None:
-            filename = src.filename
+            filename = str(src.filename)
 
         self.add_source(src)
         user_id = src.import_user_id
@@ -204,9 +205,8 @@ class LanguageDB(object):
             #    continue
 
             try:
-                self.add_surface_form(
-                    SurfaceForm(value=word, status='todo', user_id=user_id, source_id=src.id)
-                )
+                sf = SurfaceForm(value=word, status='todo', user_id=user_id, source_id=src.id)
+                self.add_surface_form(sf)
             except Exception, exc:
                 print 'Error adding surface form: %s: %s' % (exc.__class__.__name__, exc)
 
@@ -238,58 +238,16 @@ class LanguageDB(object):
                 setattr(xmlroot, section, objectify.Element(section))
                 raise LanguageDBFormatWarning(_('No top-level "%s" XML element.') % section)
 
+            mset = getattr(self, section)
             for child in getattr(xmlroot, section).iterchildren():
                 if self.elem_is_xml_comment(child):
                     continue # Skip XML comments
                 model = ModelFactory.create_model_from_elem(child)
-                mset = getattr(self, self.model_list_map[model.tag])
 
                 if model in mset:
-                    raise DuplicateModelError(str(model))
+                    raise exceptions.DuplicateModelError(str(model))
 
                 mset.add(model)
-
-    def refreshModels(self):
-        """Calls refreshModelXML() on all models in the database."""
-        for section in self.sections.keys():
-            for model in self.sections[section]:
-                self.refreshModelXML(section, model.id)
-
-    def refreshModelXML(self, section, id):
-        """Recreate the XML-subtree for the model with the specified ID in the
-            specified section.
-
-            This method is used on all models in all sections (by
-            refreshModels()) before a save() to make sure that the internal XML
-            tree reflects the values of the models.
-
-            @type  section: str
-            @param section: The section of the model which should have its XML
-                regenerated.
-            @type  id:      int
-            @param id:      The ID of the model that should have its XML
-                regenerated."""
-        models = self.find(id=id, section=section)
-
-        if not models:
-            raise exceptions.UnknownModelError(_('No model with ID %d found in section %s') % (id, section))
-
-        xml_section = getattr(self.xmlroot, section)
-        # First we delete the lxml element from self.xmlroot
-        found = False
-        for elem in xml_section.getchildren():
-            if self.elem_is_xml_comment(elem):
-                continue # Skip comments
-            if int(elem.get('id')) == id:
-                xml_section.remove(elem)
-                found = True
-                break
-
-        if not found:
-            raise Exception( _("This is weird. I've tested that a model with ID %d exists in sectin %s, but couldn't find it in the XML tree!") % (id, section) )
-
-        # Now we recreate it
-        getattr(self.xmlroot, section).append(models[0].to_xml())
 
     def save(self, filename=None):
         """Save the represented language database to the specified file.
@@ -302,24 +260,25 @@ class LanguageDB(object):
         if filename is None:
             raise IOError('No filename given!')
 
+        # FIXME (Bug #423): Find a way to make deannotate() below actually remove those
+        # annoying pytype and xsi attribs.
+        objectify.deannotate(self.xmlroot)
+
         # Make sure that we can successfully create the XML text before we open
         # (and possibly truncate) the file.
         try:
-            self.refreshModels()
             xmlstring = etree.tostring(
                 self.xmlroot,
                 pretty_print=True,
                 xml_declaration=True,
                 encoding='utf-8'
             )
-        except:
-            raise ValueError(_('Unable to create string from XML tree.'))
+        except Exception, exc:
+            raise exc
+            #raise ValueError(_('Unable to create string from XML tree.'))
 
         f = open(filename, 'w')
 
-        # FIXME (Bug #423): Find a way to make deannotate() below actually remove those
-        # annoying pytype and xsi attribs.
-        objectify.deannotate(self.xmlroot)
         print >> f, xmlstring
         f.close()
 

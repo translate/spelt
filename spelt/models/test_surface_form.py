@@ -47,8 +47,8 @@ class TestSurfaceForm(object):
         assert sf.value  == u'verkoeílikheid'
         assert sf.status == 'rejected'
 
-        sf = SurfaceForm('varkieş', 'todo', 3, 30, datetime.fromtimestamp(0), 33, 333)
-        assert unicode(sf.value, 'utf-8') == u'varkieş'
+        sf = SurfaceForm(u'varkieş', 'todo', 3, 30, datetime.fromtimestamp(0), 33, 333)
+        assert sf.value     == u'varkieş'
         assert sf.status    == 'todo'
         assert sf.id        == 3
         assert sf.user_id   == 30
@@ -63,14 +63,13 @@ class TestSurfaceForm(object):
         """
         elem1 = objectify.parse(TestSurfaceForm.xml1).getroot()
         elem2 = objectify.parse(TestSurfaceForm.xml2).getroot()
-        sf1 = SurfaceForm.create_from_elem(elem1)
-        sf2 = SurfaceForm.create_from_elem(elem2)
+        sf1 = SurfaceForm(elem=elem1)
+        sf2 = SurfaceForm(elem=elem2)
 
         assert sf1.value     == u'koeie'
         assert sf1.status    == 'classified'
         assert sf1.user_id   == 1
         assert sf1.date      == '123'
-        assert sf1._date     == datetime.fromtimestamp(123)
         assert sf1.source_id == 11
         assert sf1.root_id   == 111
 
@@ -78,6 +77,5 @@ class TestSurfaceForm(object):
         assert sf2.status    == 'ignored'
         assert sf2.user_id   == 2
         assert sf2.date      == '321'
-        assert sf2._date     == datetime.fromtimestamp(321)
         assert sf2.source_id == 22
         assert sf2.root_id   == 222

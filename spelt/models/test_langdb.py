@@ -75,10 +75,11 @@ class TestLanguageDB(object):
         assert isinstance(res[0], User)
         assert res[0].name == 'Walter'
 
-        # Test AND-ness of find: find 2 models with different keyword searches
+        # Test OR-ness of find: find 2 models with different keyword searches
         res = ldb.find(user_id=4, source_id=2)
-        assert len(res) == 1
+        assert len(res) == 3
 
         res = ldb.find(value='varkies', status='todo')
-        assert len(res) == 1
-        assert res[0].value == 'varkies' and res[0].status == 'todo'
+        assert len(res) == 2
+        assert res[0].value == 'koeie' and res[0].status == 'todo'
+        assert res[1].value == 'varkies' and res[1].status == 'todo'

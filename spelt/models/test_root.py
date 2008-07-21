@@ -44,21 +44,24 @@ class TestRoot:
         Test creation of a simple Root object with its own constructor.
         """
         r = Root()
+        now = str(int( time.mktime(datetime.now().timetuple()) ))
         # r.id not tested because it should be automagically determined by
         # the voodoo in IDManager
-        assert r.value   == ''
-        assert r.remarks is None
+        assert isinstance(r.value, objectify.NoneElement)
+        assert isinstance(r.remarks, objectify.NoneElement)
         assert r.pos_id  == 0
         assert r.user_id == 0
-        assert r.date    == str(int( time.mktime(datetime.now().timetuple()) ))
+        assert r.date    == now
+        del r
 
-        r = Root('roöt', 'remarkş', 1, 11, 111, datetime.fromtimestamp(123456))
-        assert r.value   == 'roöt'
-        assert r.remarks == 'remarkş'
+        r = Root(u'roöt', u'remarkş', 1, 11, 111, datetime.fromtimestamp(123456))
+        assert r.value   == u'roöt'
+        assert r.remarks == u'remarkş'
         assert r.id      == 1
         assert r.pos_id  == 11
         assert r.user_id == 111
         assert r.date    == '123456'
+        del r
 
     def test_create_with_xml(self):
         """
@@ -67,8 +70,8 @@ class TestRoot:
         """
         elem1 = objectify.parse(TestRoot.xml1).getroot()
         elem2 = objectify.parse(TestRoot.xml2).getroot()
-        r1 = Root.create_from_elem(elem1)
-        r2 = Root.create_from_elem(elem2)
+        r1 = Root(elem=elem1)
+        r2 = Root(elem=elem2)
 
         assert r1.value   == u'koeï'
         assert r1.remarks == u'Ä cow.'
@@ -78,8 +81,11 @@ class TestRoot:
         assert r1.date    == "1212555224"
 
         assert r2.value   == u'boom'
-        assert r2.remarks is None
+        assert isinstance(r2.remarks, objectify.NoneElement)
         assert r2.id      == 2
         assert r2.pos_id  == 22
         assert r2.user_id == 222
         assert r2.date    == "1212555925"
+
+        del r1
+        del r2

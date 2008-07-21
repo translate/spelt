@@ -29,73 +29,69 @@ class Root(XMLModel):
     This class represents a word root as represented in the XML language database.
     """
 
-    # ACCESSORS #
-    def _get_date(self):
-        return str(int( time.mktime(self._date.timetuple()) ))
-    def _set_date(self, v):
-        if isinstance(v, datetime):
-            self._date = v
-        elif isinstance(v, basestring):
-            self._date = datetime.fromtimestamp(float(v))
-    date = property(_get_date, _set_date)
-
-
     # CONSTRUCTORS #
-    def __init__(self, value=u'', remarks=None, id=0, pos_id=0, user_id=0, date=None):
-        """
-        Constructor.
+    def __init__(self, value=None, remarks=None, id=0, pos_id=0, user_id=0, date=None, elem=None):
+        """Constructor.
 
-        @type  value:   basestring
-        @param value:   The actual word root text
-        @type  remarks: basestring
-        @param remarks: Arbitrary user remarks
-        @type  id:      int
-        @param id:      Unique identifier of the word root
-        @type  pos_id:  int
-        @param pos_id:  The word root's part-of-speech's ID
-        @type  user_id: int
-        @param user_id: The ID of the user that added/changed the root
-        @type  date:    datetime.datetime
-        @param date:    The last modification date of the word root
-        """
-        assert isinstance(value, basestring)
+            @type  value:   basestring
+            @param value:   The actual word root text
+            @type  remarks: basestring
+            @param remarks: Arbitrary user remarks
+            @type  id:      int
+            @param id:      Unique identifier of the word root
+            @type  pos_id:  int
+            @param pos_id:  The word root's part-of-speech's ID
+            @type  user_id: int
+            @param user_id: The ID of the user that added/changed the root
+            @type  date:    datetime.datetime
+            @param date:    The last modification date of the word root
+            """
+        assert value is None or isinstance(value, basestring)
         assert remarks is None or isinstance(remarks, basestring)
         assert isinstance(id, int)
         assert isinstance(pos_id, int)
         assert isinstance(user_id, int)
         assert date is None or isinstance(date, datetime)
 
-        if date is None:
-            date = datetime.now()
-
         super(Root, self).__init__(
             tag='root',
             values=['value', 'remarks'],
-            attribs=['id', 'pos_id', 'user_id', 'date']
+            attribs=['id', 'pos_id', 'user_id', 'date'],
+            elem=elem
         )
 
-        self.value   = value
-        self.remarks = remarks
-        self.id      = id
-        self.pos_id  = pos_id
-        self.user_id = user_id
-        self.date    = date
+        if date is None:
+            date = datetime.now()
+
+        if elem is None:
+            self.value   = value
+            self.remarks = remarks
+            self.id      = id
+            self.pos_id  = pos_id
+            self.user_id = user_id
+            if date is not None:
+                self.date = date
+            else:
+                self.date = datetime.now()
+        else:
+            if not hasattr(self, 'value'):
+                self.value = value
+            if not hasattr(self, 'remarks'):
+                self.remarks = remarks
+            if not hasattr(self, 'id'):
+                self.id = id
+            else:
+                # Make sure that the ID is registered with the ID manager.
+                self.id = self.id
+            if not hasattr(self, 'pos_id'):
+                self.pos_id = pos_id
+            if not hasattr(self, 'user_id'):
+                self.user_id = user_id
+            if not hasattr(self, 'date'):
+                self.date = date
+
 
     # METHODS #
-    def from_xml(self, elem):
-        """
-        Calls XMLModel.from_xml(elem) and then converts the 'id', 'pos_id'
-        and 'user_id' members to int.
-        """
-        try: super(Root, self).from_xml(elem)
-        except AssertionError:
-            pass
-
-        self.pos_id = int(self.pos_id)
-        self.user_id = int(self.user_id)
-
-        self.validate_data()
-
     def validate_data(self):
         """See XMLModel.validate_data()."""
         assert len(self.value) > 0
@@ -105,23 +101,18 @@ class Root(XMLModel):
         assert isinstance(self.user_id, int)
         assert isinstance(self._date, datetime)
 
-    # CLASS/STATIC METHODS #
-    @staticmethod
-    def create_from_elem(elem):
-        """Factory method to create a Root object from a lxml.objectify.ObjectifiedElement.
-            @type  elem: lxml.objectify.ObjectifiedElement
-            @param elem: The element to read XML information from.
-            @rtype:      Root
-            @return:     An instance containing the data loaded from elem.
-            """
-        assert isinstance(elem, objectify.ObjectifiedElement)
-        r = Root()
-        r.from_xml(elem)
-        return r
-
     # SPECIAL METHODS #
     def __eq__(self, rhs):
         return self.id == rhs.id
 
     def __hash__(self):
         return self.id
+
+    def __setattr__(self, name, value):
+        if name == 'date':
+            if isinstance(value, datetime):
+                value = str(int( time.mktime(value.timetuple()) ))
+            elif isinstance(value, int) or isinstance(value, basestring):
+                value = str(value)
+
+        super(Root, self).__setattr__(name, value)

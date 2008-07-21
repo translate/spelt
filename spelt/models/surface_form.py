@@ -31,19 +31,8 @@ class SurfaceForm(XMLModel):
     This class represents a surface form word (a word with a root).
     """
 
-    # ACCESSORS #
-    def _get_date(self):
-        if isinstance(self._date, datetime):
-            return str(int( time.mktime(self._date.timetuple()) ))
-    def _set_date(self, v):
-        if isinstance(v, datetime):
-            self._date = v
-        elif isinstance(v, basestring):
-            self._date = datetime.fromtimestamp(float(v))
-    date = property( _get_date, _set_date, (lambda self: delattr(self, '_date')) )
-
     # CONSTRUCTORS #
-    def __init__(self, value='', status='', id=0, user_id=0, date=None, source_id=0, root_id=0):
+    def __init__(self, value='', status='', id=0, user_id=0, date=None, source_id=0, root_id=0, elem=None):
         """
         Constructor.
             @type  value:     basestring
@@ -72,61 +61,41 @@ class SurfaceForm(XMLModel):
         super(SurfaceForm, self).__init__(
             tag='surface_form',
             values=['value', 'status'],
-            attribs=['id', 'user_id', 'date', 'source_id', 'root_id']
+            attribs=['id', 'user_id', 'date', 'source_id', 'root_id'],
+            elem=elem
         )
 
         if date is None:
-            self.date = datetime.now()
+            date = datetime.now()
 
-        self.value     = value
-        self.status    = status
-        self.id        = id
-        self.user_id   = user_id
-        self.date      = date
-        self.source_id = source_id
-        self.root_id   = root_id
+        if elem is None:
+            self.value     = value
+            self.status    = status
+            self.id        = id
+            self.user_id   = user_id
+            self.date      = date
+            self.source_id = source_id
+            self.root_id   = root_id
+        else:
+            if not hasattr(self, 'value'):
+                self.value = value
+            if not hasattr(self, 'status'):
+                self.status = status
+            if not hasattr(self, 'id'):
+                self.id = id
+            else:
+                # Make sure that the ID is registered with the ID manager.
+                self.id = self.id
+            if not hasattr(self, 'user_id'):
+                self.user_id = user_id
+            if not hasattr(self, 'date'):
+                self.date = date
+            if not hasattr(self, 'source_id'):
+                self.source_id = source_id
+            if not hasattr(self, 'root_id'):
+                self.root_id = root_id
 
     # METHODS #
-    def from_xml(self, elem):
-        """
-        Calls XMLModel.from_xml(elem) and then converts the 'user_id',
-        'source_id' and 'root_id' members to int.
-        """
-        try: super(SurfaceForm, self).from_xml(elem)
-        except AssertionError:
-            pass
-
-        self.user_id   = int(self.user_id)
-        if self.source_id:
-            self.source_id = int(self.source_id)
-        if self.root_id:
-            self.root_id   = int(self.root_id)
-
-        self.validate_data()
-
-    def to_xml(self):
-        """Create an lxml.objectify.ObjectifiedElement from the model. This
-            method was added to gain a little bit of speed over the more general
-            spelt.models.XMLModel.to_xml().
-
-            @rtype:  objectify.Element
-            @return: The constructed XML element."""
-        self.validate_data()
-
-        root = objectify.Element(self.tag)
-
-        root.value  = self.value
-        root.status = self.status
-        root.set('id', str(self.id))
-        root.set('user_id', str(self.user_id))
-        root.set('date', self.date)
-        if self.source_id is not None:
-            root.set('source_id', str(self.source_id))
-        if self.root_id is not None:
-            root.set('root_id', str(self.root_id))
-
-        return root
-
     def validate_data(self):
         """See XMLModel.validate_data()."""
         assert isinstance(unicode(self.value), basestring) and len(self.value) > 0
@@ -136,23 +105,18 @@ class SurfaceForm(XMLModel):
         assert isinstance(self._date, datetime)
         assert isinstance(self.source_id, int)
 
-    # CLASS/STATIC METHODS #
-    @staticmethod
-    def create_from_elem(elem):
-        """Factory method to create a Source object from an lxml.objectify.ObjectifiedElement.
-            @type  elem: lxml.objectify.ObjectifiedElement
-            @param elem: The element to read XML information from.
-            @rtype:      SurfaceForm
-            @return:     An instance containing the data loaded from elem.
-            """
-        assert isinstance(elem, objectify.ObjectifiedElement)
-        sf = SurfaceForm()
-        sf.from_xml(elem)
-        return sf
-
     # SPECIAL METHODS #
     def __eq__(self, rhs):
         return hash(self) == hash(rhs)
 
     def __hash__(self):
         return hash('%s_%s' % (self.value, self.root_id))
+
+    def __setattr__(self, name, value):
+        if name == 'date':
+            if isinstance(value, datetime):
+                value = str(int( time.mktime(value.timetuple()) ))
+            elif isinstance(value, int) or isinstance(value, basestring):
+                value = str(value)
+
+        super(SurfaceForm, self).__setattr__(name, value)

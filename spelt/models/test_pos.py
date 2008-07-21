@@ -58,8 +58,8 @@ class TestPartOfSpeech(object):
         """
         elem1 = objectify.parse(TestPartOfSpeech.xml1).getroot()
         elem2 = objectify.parse(TestPartOfSpeech.xml2).getroot()
-        pos1 = PartOfSpeech.create_from_elem(elem1)
-        pos2 = PartOfSpeech.create_from_elem(elem2)
+        pos1 = PartOfSpeech(elem=elem1)
+        pos2 = PartOfSpeech(elem=elem2)
 
         assert pos1.id == 1 and pos2.id == 2
         assert pos1.shortcut == 'n1' and pos2.shortcut == 'v1sp'

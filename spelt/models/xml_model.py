@@ -33,77 +33,34 @@ class XMLModel(IDManager):
     """
 
     # CONSTRUCTORS #
-    def __init__(self, tag, values, attribs):
+    def __init__(self, tag, values, attribs, elem=None):
         """Constructor.
 
-            @type  tag:       str
-            @param tag:       The XML-tag to use to represent an instance of this model.
-            @type  values:    list
-            @param values:    A list of names of accepted the child values.
-            @type  attribs:   list
-            @param attribs:   A list of accepted attributes
+            @type  tag:     str
+            @param tag:     The XML-tag to use to represent an instance of this model
+            @type  values:  list
+            @param values:  A list of names of accepted the child values
+            @type  attribs: list
+            @param attribs: A list of accepted attributes
+            @type  elem:    lxml.objectify.ObjectifiedElement
+            @param elem:    The XML element wrapped by the model
             """
         assert isinstance(tag, str) and len(tag) > 0
 
+        # Bypass XMLModel.__setattr__()
+        super_set = super(XMLModel, self).__setattr__
+        super_set('tag', tag)
+        super_set('values', values)
+        super_set('attribs', attribs)
+
+        if elem is None:
+            super_set('elem', objectify.Element(tag))
+        else:
+            super_set('elem', elem)
+
         super(XMLModel, self).__init__()
 
-        self.tag       = tag
-        self.values    = values
-        self.attribs   = attribs
-
     # METHODS #
-    def from_xml(self, elem):
-        """Read data from the given lxml.objectify.ObjectifiedElement element.
-            NOTE: Using this method will _not_ preserve any undeclared information.
-            NOTE: Attributes are always saved as strings
-
-            @type  elem: lxml.objectify.ObjectifiedElement
-            @param elem: The element to read data from.
-            """
-        assert elem and isinstance(elem, objectify.ObjectifiedElement)
-
-        if elem.tag != self.tag:
-            raise exceptions.InvalidElementError(_("The parameter element's tag is not valid for this model."))
-
-        for at in self.attribs:
-            if at == 'id':
-                if self.id > 0:
-                    self.del_id(self.id)
-                self.id = int( elem.get('id') )
-            else:
-                setattr(self, at, elem.get(at))
-
-        for v in self.values:
-            try: elem_v = getattr(elem, v)
-            except AttributeError:
-                elem_v = None
-
-            if isinstance(elem_v, objectify.StringElement):
-                setattr(self, v, unicode(elem_v))
-            else:
-                setattr(self, v, elem_v)
-
-        self.validate_data()
-
-    def to_xml(self):
-        """Create an lxml.objectify.ObjectifiedElement from the model.
-            @rtype:  objectify.Element
-            @return: The constructed XML element."""
-        self.validate_data()
-
-        root = objectify.Element(self.tag)
-
-        for at in self.attribs:
-            if at == 'id':
-                root.set('id', str(self.id))
-            elif getattr(self, at) is not None:
-                root.set(at, str(getattr(self, at)))
-
-        for v in self.values:
-            setattr(root, v, getattr(self, v))
-
-        return root
-
     def validate_data(self):
         """
         Checks whether all data-constraints are met.
@@ -121,6 +78,36 @@ class XMLModel(IDManager):
         It should throw an exception if validation fails.
         """
         pass
+
+    # SPECIAL METHODS #
+    def __getattribute__(self, name):
+        super_getattr = super(XMLModel, self).__getattribute__
+
+        if name in super_getattr('attribs'):
+            if name == 'id' or name.endswith('_id'):
+                # Automatically convert ID's to int()s
+                return int(super_getattr('elem').get(name))
+            else:
+                return super_getattr('elem').get(name)
+        elif name in super_getattr('values'):
+            return unicode(getattr(super_getattr('elem'), name))
+
+        return super_getattr(name)
+
+    def __setattr__(self, name, value):
+        if name in ('attribs', 'values'):
+            super(XMLModel, self).__setattr__(name, value)
+        elif name in self.attribs:
+            # Give the 'id' attribute special treatment, because we love it so much. :/
+            if name == 'id':
+                self._set_id(value)
+                self.elem.set('id', str(self._id))
+                return
+            self.elem.set(name, str(value))
+        elif name in self.values:
+            setattr(self.elem, name, value)
+
+        super(XMLModel, self).__setattr__(name, value)
 
     def __repr__(self):
         return str(self)

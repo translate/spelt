@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import time
 from datetime import datetime
 from lxml     import objectify
 from StringIO import StringIO
@@ -50,15 +51,15 @@ class TestSource:
         Test creation of a simple Source object with its own constructor.
         XML attributes (first 3 arguments) only.
         """
-        now = datetime.now()
+        now = str(int( time.mktime(datetime.now().timetuple()) ))
         s = Source(id=101, date=now, import_user_id=2)
 
         assert s.id == 101
-        assert s._date == now
+        assert s.date == now
         assert s.import_user_id == 2
-        assert s.name == '<unknown>'
-        assert s.filename == ''
-        assert s.description is None
+        assert isinstance(s.name, objectify.NoneElement)
+        assert isinstance(s.filename, objectify.NoneElement)
+        assert isinstance(s.description, objectify.NoneElement)
 
     def test_create_no_xml_values(self):
         """
@@ -77,8 +78,8 @@ class TestSource:
         Test creation of a Source instance by using the create_from_elem()
         factory method.
         """
-        s1 = Source.create_from_elem(self.elem1)
-        s2 = Source.create_from_elem(self.elem2)
+        s1 = Source(elem=self.elem1)
+        s2 = Source(elem=self.elem2)
 
         assert s1.name == 'Test Source 1'
         assert s1.filename == 'testsrc1.txt'
@@ -94,9 +95,6 @@ class TestSource:
         assert s2.date == '1212555925'
         assert s2.import_user_id == 2
 
-    def test_to_xml(self):
-        s = Source.create_from_elem(self.elem1)
-        s.to_xml()
 
 if __name__ == "__main__":
     t = TestSource()

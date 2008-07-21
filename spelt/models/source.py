@@ -26,24 +26,14 @@ from spelt.common import _
 
 from spelt.models.xml_model import XMLModel
 
+
 class Source(XMLModel):
     """
     This class represents a source for a word
     """
 
-    # ACCESSORS #
-    def _get_date(self):
-        if isinstance(self._date, datetime):
-            return str(int( time.mktime(self._date.timetuple()) ))
-    def _set_date(self, v):
-        if isinstance(v, datetime):
-            self._date = v
-        elif isinstance(v, basestring):
-            self._date = datetime.fromtimestamp(float(v))
-    date = property( _get_date, _set_date, (lambda self: delattr(self, '_date')) )
-
     # CONSTRUCTORS #
-    def __init__(self, name='<unknown>', filename='', desc=None, id=0, date=None, import_user_id=0):
+    def __init__(self, name=None, filename=None, desc=None, id=0, date=None, import_user_id=0, elem=None):
         """Constructor.
             @type  name:           basestring
             @param name:           The source's name (default None).
@@ -58,34 +48,42 @@ class Source(XMLModel):
             @type  import_user_id: int
             @param import_user_id: The ID of the user that imported the source (right? (default None).
             """
+        super(Source, self).__init__(
+            tag='source',
+            attribs=['id', 'date', 'import_user_id'],
+            values=['name', 'filename', 'description'],
+            elem=elem
+        )
+
         # Check that date is a valid timestamp
         if date is None:
             date = datetime.now()
 
-        super(Source, self).__init__(
-            tag='source',
-            attribs=['id', 'date', 'import_user_id'],
-            values=['name', 'filename', 'description']
-        )
-
-        self.name, self.filename, self.description = name, filename, desc
-        self._date, self.import_user_id = date, import_user_id
-        self.id = id
+        if elem is None:
+            self.name           = name
+            self.filename       = filename
+            self.description    = desc
+            self.date           = date
+            self.import_user_id = import_user_id
+            self.id             = id
+        else:
+            if not hasattr(self, 'name'):
+                self.name = name
+            if not hasattr(self, 'filename'):
+                self.filename = filename
+            if not hasattr(self, 'description'):
+                self.description = desc
+            if not hasattr(self, 'id'):
+                self.id = id
+            else:
+                # Make sure that the ID is registered with the ID manager.
+                self.id = self.id
+            if not hasattr(self, 'date'):
+                self.date = date
+            if not hasattr(self, 'import_user_id'):
+                self.import_user_id = import_user_id
 
     # METHODS #
-    def from_xml(self, elem):
-        """
-        Calls XMLModel.from_xml(elem) and then converts the 'id' and
-        'import_user_id' members to int.
-        """
-        try: super(Source, self).from_xml(elem)
-        except AssertionError:
-            pass
-
-        self.import_user_id = int(self.import_user_id)
-
-        self.validate_data()
-
     def validate_data(self):
         """See XMLModel.validate_data()."""
         assert len(self.name) > 0
@@ -93,23 +91,18 @@ class Source(XMLModel):
         assert isinstance(self._date, datetime) and len(self.date) > 0
         assert isinstance(self.import_user_id, int)
 
-    # CLASS/STATIC METHODS #
-    @staticmethod
-    def create_from_elem(elem):
-        """Factory method to create a Source object from an lxml.objectify.ObjectifiedElement.
-            @type  elem: lxml.objectify.ObjectifiedElement
-            @param elem: The element to read XML information from.
-            @rtype:      Source
-            @return:     An instance containing the data loaded from elem.
-            """
-        assert isinstance(elem, objectify.ObjectifiedElement)
-        s = Source()
-        s.from_xml(elem)
-        return s
-
     # SPECIAL METHODS #
     def __eq__(self, rhs):
         return self.id == rhs.id
 
     def __hash__(self):
         return self.id
+
+    def __setattr__(self, name, value):
+        if name == 'date':
+            if isinstance(value, datetime):
+                value = str(int( time.mktime(value.timetuple()) ))
+            elif isinstance(value, int) or isinstance(value, basestring):
+                value = str(value)
+
+        super(Source, self).__setattr__(name, value)
