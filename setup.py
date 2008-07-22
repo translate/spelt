@@ -237,7 +237,7 @@ def add_win32_options(options):
             "compressed": True,
             "excludes":   ["PyLucene", "Tkconstants", "Tkinter", "tcl"],
             "dist_dir":   "spelt-win32",
-            "includes":   ["lxml", "lxml.builder", "lxml._elementpath", "lxml.etree", "lxml.objectify", "cairo", "pango", "pangocairo", "atk", "gobject", "gtk.glade"],
+            "includes":   ["lxml", "lxml.builder", "lxml._elementpath", "lxml.etree", "lxml.objectify", "cairo", "pango", "pangocairo", "atk", "gobject", "gtk.glade", "gtk.keysyms"],
             "optimize":   2,
         }
         innosetup_options = py2exe_options.copy()
