@@ -51,13 +51,13 @@ def run_spelt():
 
 def profile(profile_file):
     import cProfile
-    import lsprofcalltree
+    import spelt.lsprofcalltree
 
     logging.info('Staring profiling run')
     profiler = cProfile.Profile()
     profiler.runcall(run_spelt)
 
-    k_cache_grind = lsprofcalltree.KCacheGrind(profiler)
+    k_cache_grind = spelt.lsprofcalltree.KCacheGrind(profiler)
     k_cache_grind.output(profile_file)
 
     profile_file.close()

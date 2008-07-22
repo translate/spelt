@@ -51,8 +51,8 @@ classifiers = [
 
 options = {
     'data_files': [
-        ('.',                                    ['lsprofcalltree.py', 'TODO']),
         (TARGET_DATA_DIR,                        ['share/spelt/spelt.glade', 'share/spelt/spelt.ico']),
+        (path.join(TARGET_DATA_DIR, 'doc'),      ['TODO']),
         (path.join(TARGET_DATA_DIR, 'examples'), ['share/spelt/examples/basic_english.xldb', 'share/spelt/examples/skeldb.xldb'])
     ],
     'scripts': [
