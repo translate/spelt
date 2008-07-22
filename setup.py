@@ -33,7 +33,9 @@ except ImportError:
     py2exe = None
     build_exe = Command
 
+# Data directory in the source tree
 SOURCE_DATA_DIR = path.join('share', 'spelt')
+# Installation data directory (will be appended to /usr/ (for *nix) for example)
 TARGET_DATA_DIR = path.join("share", "spelt")
 
 classifiers = [

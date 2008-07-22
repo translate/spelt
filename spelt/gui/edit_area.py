@@ -120,7 +120,7 @@ class EditArea(object):
             self.set_visible(btn_ok=False, btn_add_root=True)
             self.set_sensitive(cmb_pos=True, btn_add_root=False)
 
-        self.cmb_pos.grab_focus()
+        self.cmb_pos.child.grab_focus()
 
     def on_surface_form_selected(self, sf):
         """A proxied event handler for when a surface form is selected in the
@@ -251,6 +251,7 @@ class EditArea(object):
             self.cmb_pos.child.set_text('')
             self.set_visible(btn_ok=True, btn_add_root=False, btn_mod_root=False)
             self.set_sensitive(btn_ok=False, cmb_pos=False)
+            self.cmb_root.grab_focus()
             return
 
         assert isinstance(pos, PartOfSpeech)
@@ -323,8 +324,11 @@ class EditArea(object):
         self.pos_completion.clear()
         self.pos_completion.pack_start(pos_cell)
         self.pos_completion.set_cell_data_func(pos_cell, self.__render_pos)
+        self.pos_completion.set_inline_completion(True)
         self.pos_completion.set_model(self.pos_store)
         self.pos_completion.set_match_func(self.__match_pos)
+        self.pos_completion.set_text_column(COL_TEXT)
+        self.pos_completion.props.text_column = COL_TEXT
         self.cmb_pos.child.set_completion(self.pos_completion)
 
         root_cell = gtk.CellRendererText()
@@ -332,8 +336,10 @@ class EditArea(object):
         self.root_completion.clear()
         self.root_completion.pack_start(root_cell)
         self.root_completion.set_cell_data_func(root_cell, self.__render_root)
+        self.root_completion.set_inline_completion(True)
         self.root_completion.set_model(self.root_store)
         self.root_completion.set_match_func(self.__match_root)
+        self.root_completion.props.text_column = COL_TEXT
         self.cmb_root.child.set_completion(self.root_completion)
 
         self.__connect_signals()
@@ -358,6 +364,12 @@ class EditArea(object):
         # ComboBoxEntry's Entry
         self.cmb_pos.child.connect('activate', self.__on_entry_activated, self.check_pos_text)
         self.cmb_root.child.connect('activate', self.__on_entry_activated, self.check_root_text)
+
+        self.cmb_pos.child.connect('changed', self.__on_entry_changed, self.select_pos)
+        self.cmb_root.child.connect('changed', self.__on_entry_changed, self.select_root)
+
+        self.cmb_pos.child.connect('key-press-event', self.__on_entry_key_press_event, self.check_pos_text)
+        self.cmb_root.child.connect('key-press-event', self.__on_entry_key_press_event, self.check_root_text)
         # EntryCompletions
         self.pos_completion.connect('match-selected', self.__on_match_selected, self.cmb_pos, self.select_pos)
         self.root_completion.connect('match-selected', self.__on_match_selected, self.cmb_root, self.select_root)
@@ -456,6 +468,23 @@ class EditArea(object):
             model = combo.get_model().get_value(iter, COL_MODEL)
             select_model(model)
 
+    def __on_entry_activated(self, entry, text_handler):
+        """Handler for the "activated" event of a gtk.Entry.
+
+            It is used here for the child Entries of the ComboBoxEntries.
+            @type  text_handler: function
+            @param text_handler: The function that will handle the text entered."""
+        text_handler(entry.get_text())
+
+    def __on_entry_changed(self, entry, empty_handler):
+        if len(entry.get_text()) == 0:
+            empty_handler(None)
+
+    def __on_entry_key_press_event(self, widget, event, check_func):
+        if event.keyval == gtk.keysyms.Tab:
+            check_func()
+            return True
+
     def __on_match_selected(self, completion, store, iter, combo, select_model):
         """Handler for the "match-selected" event of ComboBoxEntries'
             EntryCompletions.
@@ -473,14 +502,6 @@ class EditArea(object):
 
         return True
 
-    def __on_entry_activated(self, entry, text_handler):
-        """Handler for the "activated" event of a gtk.Entry.
-
-            It is used here for the child Entries of the ComboBoxEntries.
-            @type  text_handler: function
-            @param text_handler: The function that will handle the text entered."""
-        text_handler(entry.get_text())
-
     def __render_pos(self, layout, cell, store, iter):
         """Cell data function that renders a part-of-speech from it's model in
             the gtk.ListStore.
@@ -495,7 +516,7 @@ class EditArea(object):
     def __render_root(self, layout, cell, store, iter):
         """Cell data function that renders a root word from it's model in
             the gtk.ListStore.
-            
+
             See gtk.CellLayout.set_cell_data_func()'s documentation for
             description of parameters. For the sake of practicality, not that
             "store.get_value(iter, COL_MODEL)" returns the object from the selected
