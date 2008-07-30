@@ -120,8 +120,9 @@ SetupIconFile=%(icon_path)s
         print >> ofi, r'Source: "%s"; DestDir: "{app}\%s"; Flags: ignoreversion' % (fpath, os.path.dirname(fpath))
     print >> ofi, r'''
 [Icons]
-Name: "{group}\%(name)s Translation Editor"; Filename: "{app}\run_spelt.exe";
-Name: "{group}\%(name)s (uninstall)"; Filename: "{uninstallexe}"''' % {'name': name}
+Name: "{group}\%(name)s "; Filename: "{app}\run_spelt.exe";
+Name: "{group}\%(name)s (uninstall)"; Filename: "{uninstallexe}"
+Name: "{group}\Language Database Examples"; Filename: "{app}\share\spelt\examples"''' % {'name': name}
 
 #    For now we don't worry about install scripts
 #    if install_scripts:
@@ -155,7 +156,6 @@ Name: "{group}\%(name)s (uninstall)"; Filename: "{uninstallexe}"''' % {'name': n
     #Root: HKCR; Subkey: "spelt_po\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\run_spelt.exe"" ""%1"""
 
     # Show a "Launch Spelt" checkbox on the last installer screen
-
     print >> ofi, r'''
 [Run]
 Filename: "{app}\run_spelt.exe"; Description: "{cm:LaunchProgram,%(name)s}"; Flags: nowait postinstall skipifsilent''' % {'name': name}
