@@ -55,6 +55,7 @@ class GUI(object):
     def __init__(self, glade_filename):
         self.glade = gtk.glade.XML(glade_filename)
         self.config = Configuration()
+        self.changes_made = False
 
         # Main window
         self.main_window = self.glade.get_widget('wnd_main')
@@ -241,6 +242,12 @@ class GUI(object):
         return res == gtk.RESPONSE_YES
 
     def quit(self):
+        if self.changes_made and self.prompt(
+                    text=_('There are unsaved changes.\n\nSave before exiting?'),
+                    title=_('Save changes?')
+                ):
+            self.langdb.save()
+
         self.config.save()
         gtk.main_quit()
 

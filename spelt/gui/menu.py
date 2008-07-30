@@ -151,8 +151,7 @@ class Menu(object):
 
     def handler_quit(self):
         """Quit the application after confirmation."""
-        if self.gui.prompt(_('Are you sure you want to quit?')):
-            self.gui.quit()
+        self.gui.quit()
 
     def handler_emaildb(self):
         db = self.config.current_database

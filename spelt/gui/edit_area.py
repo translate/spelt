@@ -426,6 +426,7 @@ class EditArea(object):
         self.set_sensitive(btn_ok=True, btn_add_root=False, btn_mod_root=False)
         self.set_visible(  btn_ok=True, btn_add_root=False, btn_mod_root=False)
         self.btn_ok.clicked()
+        self.gui.changes_made = True
 
     def __on_btn_ignore_clicked(self, btn):
         """Set the currently selected surface form's status to "ignored"."""
@@ -434,6 +435,7 @@ class EditArea(object):
 
         self.current_sf.status = 'ignored'
         self.gui.reload_database()
+        self.gui.changes_made = True
 
     def __on_btn_mod_root_clicked(self, btn):
         """Update the current root with the selected part of speech."""
@@ -450,6 +452,7 @@ class EditArea(object):
         self.set_sensitive(btn_ok=True, btn_add_root=False, btn_mod_root=False)
         self.set_visible(  btn_ok=True, btn_add_root=False, btn_mod_root=False)
         self.btn_ok.clicked()
+        self.gui.changes_made = True
 
     def __on_btn_ok_clicked(self, btn):
         """Save changes made to the selected surface form, save it and move on
@@ -465,6 +468,7 @@ class EditArea(object):
         self.current_sf.date    = datetime.datetime.now()
 
         self.wordlist.refresh() # This will select the next word at the top of the word list
+        self.gui.changes_made = True
 
     def __on_btn_reject_clicked(self, btn):
         """Set the currently selected surface form's status to "rejected"."""
@@ -473,6 +477,7 @@ class EditArea(object):
 
         self.current_sf.status = 'rejected'
         self.gui.reload_database()
+        self.gui.changes_made = True
 
     def __on_cmb_changed(self, combo, select_model):
         """Handler for the "changed" event of a gtk.ComboBox.
