@@ -57,6 +57,7 @@ class EditArea(object):
             text = self.cmb_pos.child.get_text()
 
         if not text:
+            self.set_status(_('No part-of-speech specified.'))
             self.select_pos(None)
             self.cmb_pos.grab_focus()
             return
@@ -79,10 +80,12 @@ class EditArea(object):
                 self.set_visible(btn_ok=True, btn_add_root=False, btn_mod_root=False)
 
             if self.cmb_root.get_active() < 0:
-                # If we are working with a new root, there is not sense in try to modify it.
+                # If we are working with a new root, there is not sense in
+                # trying to modify it.
                 self.set_visible(btn_mod_root=False)
         else:
             # If we get here, we have a new part of speech
+            self.set_status(_('Part of speech not found.'))
             self.select_pos(None)
             return
 
@@ -97,6 +100,7 @@ class EditArea(object):
             text = self.cmb_root.child.get_text()
 
         if not text:
+            self.set_status(_('A root must be specified.'))
             self.select_root(None)
             return
 
@@ -136,6 +140,7 @@ class EditArea(object):
             return
 
         self.current_sf = sf
+        self.lbl_status.hide()
         self.lbl_word.set_markup('<b>%s</b>' % sf.value)
 
         if self.langdb is None:
@@ -216,6 +221,8 @@ class EditArea(object):
             self.cmb_root.set_active(-1)
             self.cmb_root.child.set_text('')
             self.select_pos(None) # This deselects the part of speech too.
+            self.cmb_root.grab_focus()
+            self.set_sensitive(cmb_pos=False)
             return
 
         assert isinstance(root, Root)
@@ -230,7 +237,7 @@ class EditArea(object):
                 pos_found = self.langdb.find(id=root.pos_id, section='parts_of_speech')
                 # The pos_found list can have a maximum of 1 element, because we
                 # search the database on ID's. ID's are guaranteed to be unique by the
-                # models (via it's inheritence of IDModel).
+                # models (via it's inheritence of IDManager).
                 if pos_found:
                     self.select_pos(pos_found[0])
                 else:
@@ -249,9 +256,9 @@ class EditArea(object):
             # Deselect POS
             self.cmb_pos.set_active(-1)
             self.cmb_pos.child.set_text('')
+            self.cmb_pos.grab_focus()
             self.set_visible(btn_ok=True, btn_add_root=False, btn_mod_root=False)
-            self.set_sensitive(btn_ok=False, cmb_pos=False)
-            self.cmb_root.grab_focus()
+            self.set_sensitive(btn_ok=False)
             return
 
         assert isinstance(pos, PartOfSpeech)
@@ -275,6 +282,12 @@ class EditArea(object):
             if hasattr(self, widget):
                 getattr(self, widget).set_sensitive(sensitive)
 
+    def set_status(self, msg):
+        """Displays the given status message for 3 seconds."""
+        self.lbl_status.show()
+        self.lbl_status.set_markup('<span color="red">%s</span>' % msg)
+        gobject.timeout_add(3000, self.__clear_status)
+
     def set_visible(self, **kwargs):
         """Set widgets' visibility based on keyword arguments.
 
@@ -291,6 +304,7 @@ class EditArea(object):
             'btn_ignore',
             'cmb_root',
             'cmb_pos',
+            'lbl_status',
             'btn_ok',
             'btn_add_root',
             'btn_mod_root'
@@ -387,6 +401,10 @@ class EditArea(object):
         return model.value.startswith(key)
 
     # GUI SIGNAL HANDLERS #
+    def __clear_status(self):
+        self.lbl_status.hide()
+        return False
+
     def __on_btn_add_root_clicked(self, btn):
         """Add the current root to the language database."""
         if self.langdb.find(id=self.current_root.id, section='roots'):
