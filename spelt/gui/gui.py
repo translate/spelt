@@ -52,7 +52,7 @@ class GUI(object):
     RESPONSE_OK, RESPONSE_CANCEL = range(2)
 
     # CONSTRUCTOR #
-    def __init__(self, dbfilename, glade_filename):
+    def __init__(self, dbfilename, glade_filename, icon_filename):
         self.glade = gtk.glade.XML(glade_filename)
         self.config = Configuration()
         self.changes_made = False
@@ -60,6 +60,7 @@ class GUI(object):
         # Main window
         self.main_window = self.glade.get_widget('wnd_main')
         self.main_window.connect('destroy', lambda *w: gtk.main_quit())
+        self.main_window.set_icon_from_file(icon_filename)
 
         self.__create_dialogs()
 
