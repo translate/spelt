@@ -56,11 +56,12 @@ class GUI(object):
         self.glade = gtk.glade.XML(glade_filename)
         self.config = Configuration()
         self.changes_made = False
+        self.icon_filename = icon_filename
 
         # Main window
         self.main_window = self.glade.get_widget('wnd_main')
         self.main_window.connect('destroy', lambda *w: gtk.main_quit())
-        self.main_window.set_icon_from_file(icon_filename)
+        self.main_window.set_icon_from_file(self.icon_filename)
 
         self.__create_dialogs()
 
@@ -191,6 +192,13 @@ class GUI(object):
             "Walter Leibbrandt <walter@translate.org.za>"
         ])
         #self.dlg_about.set_artists()
+
+        # Set icon on all dialogs
+        for dlg in (
+            self.open_chooser, self.save_chooser, self.dlg_error,
+            self.dlg_info, self.dlg_prompt, self.dlg_about
+            ):
+            dlg.set_icon_from_file(self.icon_filename)
 
     def check_work_done(self, sf):
         if sf is None:
