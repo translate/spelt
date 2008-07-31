@@ -148,13 +148,13 @@ Name: "{group}\Language Database Examples"; Filename: "{app}\share\spelt\example
     #
     print >> ofi, r'''
 ;File extension:
-Root: HKCR; Subkey: ".po"; ValueType: string; ValueName: ""; ValueData: "spelt_po"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".xldb"; ValueType: string; ValueName: ""; ValueData: "spelt_xldb"; Flags: uninsdeletevalue
 ;Description of the file type
-Root: HKCR; Subkey: "spelt_po"; ValueType: string; ValueName: ""; ValueData: "Gettext PO"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "spelt_xldb"; ValueType: string; ValueName: ""; ValueData: "XML Language Database"; Flags: uninsdeletekey
 ;Icon to use in Explorer
-Root: HKCR; Subkey: "spelt_po\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\share\spelt\spelt.ico"
+Root: HKCR; Subkey: "spelt_xldb\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\share\spelt\spelt.ico"
 ;The command to open the file
-Root: HKCR; Subkey: "spelt_po\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\run_spelt.exe"" ""%1"""'''
+Root: HKCR; Subkey: "spelt_xldb\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\run_spelt.exe"" ""%1"""'''
 
     # Show a "Launch Spelt" checkbox on the last installer screen
     print >> ofi, r'''
