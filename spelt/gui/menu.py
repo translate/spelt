@@ -84,7 +84,7 @@ class Menu(object):
         """Get and initialize widgets from the Glade object."""
         self.widgets = (
             # File menu
-            #'mnu_open',    # Removed
+            'mnu_open',
             'mnu_save',
             'mnu_saveas',
             'mnu_quit',
@@ -103,9 +103,13 @@ class Menu(object):
 
     # SIGNAL HANDLERS #
     def handler_open(self):
-        """Display an "Open" dialog and try to open the file as a language database.
+        """Display an "Open" dialog and try to open the file as a language database."""
+        if self.gui.changes_made and self.gui.prompt(
+                    text=_('Save language database changes?'),
+                    title=_('The language database you are\ncurrently working with has changed.\n\nSave changes?')
+                ):
+            self.config.current_database.save()
 
-            This is not used anymore, seeing as the "Open" menu item has been removed."""
         filename = self.gui.get_open_filename()
         if filename is None:
             return
@@ -114,12 +118,8 @@ class Menu(object):
             self.gui.show_error(_('File does not exist: "%s"') % (filename))
             return
 
-        try:
-            self.config.current_database.load(filename=filename)
-        except exc:
-            self.gui.show_error(_( 'Error loading database from "%s"') % (filename) )
-            print _('Error loading database from "%s": %s') % (filename, str(exc))
-            return
+        # Get and save new user information
+        self.gui.load_langdb(filename)
 
         # Ask the main GUI object to reload the database everywhere...
         self.gui.reload_database()

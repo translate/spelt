@@ -18,22 +18,31 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-"""Contains the DlgFirstRun ("first run" dialog) class."""
+"""Contains the DlgDBLoad class."""
 
 import gtk, gtk.glade
 
 from spelt.common import _
 from spelt.models import LanguageDB, User
 
-class DlgFirstRun(object):
+class DlgDBLoad(object):
     """
     A wrapper around a gtk.Dialog that gets configuration information from the user.
     """
 
     # ACCESSORS #
+    def _set_langdb_path(self, txt):
+        if txt is None or not txt:
+            self.langdb = None
+            self.ent_langdb_path.set_text('')
+            return
+
+        self.langdb = LanguageDB(filename=txt)
+        self.ent_langdb_path.set_text(txt)
+
     langdb_path = property(
         lambda self: self.ent_langdb_path.get_text(),
-        lambda self, txt: self.ent_langdb_path.set_text(txt)
+        _set_langdb_path
     )
 
     user_name = property(
@@ -74,6 +83,9 @@ class DlgFirstRun(object):
         self.__init_widgets()
 
     # METHODS #
+    def clear(self):
+        self.langdb_path = None
+
     def get_default_user_name(self):
         # pwd is only available on UNIX
         try:
@@ -84,9 +96,16 @@ class DlgFirstRun(object):
         return pwd.getpwnam(getpass.getuser())[4]
 
     def run(self):
-        self.notebook.set_current_page(0)
-        res = self.dlg_first_run.run()
-        self.dlg_first_run.hide()
+        start_page = 0
+        if self.langdb is not None and self.langdb.filename == self.langdb_path:
+            start_page = 1
+            self.user_name = self.get_default_user_name()
+
+            for u in self.langdb.users:
+                self.user_store.append([u.name])
+        self.notebook.set_current_page(start_page)
+        res = self.dlg_dbload.run()
+        self.dlg_dbload.hide()
 
         return res
 
@@ -94,7 +113,7 @@ class DlgFirstRun(object):
         """Get and initialize widgets from the Glade object."""
         widgets = (
             # Main widgets
-            'dlg_first_run',
+            'dlg_dbload',
             'notebook',
             # Language database page
             'ent_langdb_path',
@@ -107,7 +126,7 @@ class DlgFirstRun(object):
             'ent_username_confirm',
             'ent_userid_confirm',
             # Buttons in the button box at the bottom
-            'btn_forward', 'btn_ok_fr'
+            'btn_next', 'btn_ok_fr'
         )
 
         for widget_name in widgets:
@@ -115,7 +134,7 @@ class DlgFirstRun(object):
 
         self.notebook.set_show_tabs(False)
         # Connect signal handlers
-        self.btn_forward.connect('clicked', self.__on_forward_clicked)
+        self.btn_next.connect('clicked', self.__on_next_clicked)
         self.btn_ok_fr.connect('clicked', self.__on_ok_clicked)
         self.btn_open.connect('clicked', self.__on_open_clicked)
 
@@ -136,17 +155,16 @@ class DlgFirstRun(object):
 
     # SIGNAL HANDLERS #
     def __on_close_clicked(self, btn):
-        self.dlg_first_run.response(self.gui.RESPONSE_CANCEL)
+        self.dlg_dbload.response(self.gui.RESPONSE_CANCEL)
 
-    def __on_forward_clicked(self, btn):
+    def __on_next_clicked(self, btn):
         if self.user_name:
             self.notebook.next_page()
 
             # Add the user if he's not in the database.
             usersfound = self.langdb.find(section='users', name=self.user_name)
             if not usersfound:
-                u = User(name=self.user_name)
-                self.langdb.add_user(u)
+                self.langdb.add_user( User(name=self.user_name) )
                 self.langdb.save()
 
             self.langdb_path_confirm = self.langdb.filename
@@ -154,7 +172,7 @@ class DlgFirstRun(object):
             self.username_confirm    = self.user_name
 
     def __on_ok_clicked(self, btn):
-        self.dlg_first_run.response(self.gui.RESPONSE_OK)
+        self.dlg_dbload.response(self.gui.RESPONSE_OK)
 
     def __on_open_clicked(self, btn):
         self.langdb_path = self.gui.get_open_filename()

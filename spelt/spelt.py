@@ -31,9 +31,9 @@ GLADE_DIRS = [
 
 class Spelt(object):
     """Main entry point for Spelt."""
-    def __init__(self, basepath):
+    def __init__(self, dbfilename, basepath):
         """Creates a gui.GUI object."""
-        self.gui = GUI(self.find_glade(basepath, 'spelt.glade'))
+        self.gui = GUI(dbfilename, self.find_glade(basepath, 'spelt.glade'))
 
     def find_glade(self, basepath, glade_filename):
         """This method is based on the load_glade_file() function in VirTaal's virtaal/main_window.py."""

@@ -27,11 +27,11 @@ from spelt.common  import Configuration, __version__, _
 from spelt.models  import LanguageDB, User
 from spelt.support import openmailto
 
-from spelt.gui.dlg_first_run import DlgFirstRun
-from spelt.gui.dlg_source    import DlgSource
-from spelt.gui.edit_area     import EditArea
-from spelt.gui.menu          import Menu
-from spelt.gui.wordlist      import WordList
+from spelt.gui.dlg_dbload import DlgDBLoad
+from spelt.gui.dlg_source import DlgSource
+from spelt.gui.edit_area  import EditArea
+from spelt.gui.menu       import Menu
+from spelt.gui.wordlist   import WordList
 
 LICENSE = """This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ class GUI(object):
     RESPONSE_OK, RESPONSE_CANCEL = range(2)
 
     # CONSTRUCTOR #
-    def __init__(self, glade_filename):
+    def __init__(self, dbfilename, glade_filename):
         self.glade = gtk.glade.XML(glade_filename)
         self.config = Configuration()
         self.changes_made = False
@@ -67,12 +67,21 @@ class GUI(object):
         db = LanguageDB(lang='')
         self.config.current_database = db
 
-        if os.path.exists(self.config.general['last_langdb_path']):
+        if dbfilename:
+            dbfilename = os.path.abspath(dbfilename)
+
+        if os.path.exists(dbfilename) and dbfilename != self.config.general['last_langdb_path']:
+            if not self.load_langdb(dbfilename):
+                self.quit()
+        elif os.path.exists(self.config.general['last_langdb_path']):
             db.load(self.config.general['last_langdb_path'])
+            fn = os.path.split(db.filename)[-1]
+            self.main_window.set_title('Spelt - %(langdb_filename)s' % {'langdb_filename': fn})
         else:
             # If we couldn't find the previous database, act as if this is a
             # first run.
-            self.do_first_run()
+            if not self.load_langdb():
+                self.quit()
 
         self.menu      = Menu(self.glade, gui=self)
         self.word_list = WordList(self.glade, langdb=db, gui=self)
@@ -82,7 +91,8 @@ class GUI(object):
 
         # Check if this is the first time the program is run
         if self.config.user['id'] == 0:
-            self.do_first_run()
+            if not self.load_langdb():
+                self.quit()
 
         self.main_window.show_all()
         self.reload_database()
@@ -147,6 +157,8 @@ class GUI(object):
 
         # Source dialog wrapper
         self.dlg_source = DlgSource(self.glade)
+        # LanguageDB loading dialog
+        self.dlg_dbload = DlgDBLoad(self.glade, self)
 
         # About dialog
         def on_about_url(dialog, uri, data):
@@ -183,18 +195,6 @@ class GUI(object):
         if sf is None:
             self.show_info(_('All work done!'))
 
-    def do_first_run(self):
-        dlg_firstrun = DlgFirstRun(self.glade, self)
-        if dlg_firstrun.run() != self.RESPONSE_OK:
-            self.quit()
-
-        self.config.current_database = db = dlg_firstrun.langdb
-
-        user = dlg_firstrun.langdb.find(section='users', name=dlg_firstrun.user_name)[0]
-        self.config.user['id']                  = user.id
-        self.config.general['last_langdb_path'] = db.filename
-        self.config.save()
-
     def get_open_filename(self, title=_('Select language database to open')):
         """Display an "Open" dialog and return the selected file.
             @rtype  str
@@ -220,6 +220,27 @@ class GUI(object):
             return None
 
         return self.save_chooser.get_filename()
+
+    def load_langdb(self, langdb_path=None):
+        self.dlg_dbload.clear()
+
+        if langdb_path is not None and os.path.exists(langdb_path):
+            self.dlg_dbload.langdb_path = langdb_path
+
+        if self.dlg_dbload.run() != self.RESPONSE_OK:
+            return False
+
+        self.config.current_database = db = self.dlg_dbload.langdb
+
+        user = db.find(section='users', name=self.dlg_dbload.user_name)[0]
+        self.config.user['id']                  = user.id
+        self.config.general['last_langdb_path'] = os.path.abspath(db.filename)
+        self.config.save()
+
+        fn = os.path.split(db.filename)[-1]
+        self.main_window.set_title('Spelt - %(langdb_filename)s' % {'langdb_filename': fn})
+
+        return True
 
     def show_error(self, text, title=_('Error!')):
         self.dlg_error.set_markup(escape(text))

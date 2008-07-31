@@ -28,7 +28,7 @@ sys.path.append('spelt')
 from spelt.spelt  import Spelt
 from spelt.common import _
 
-usage = "usage: %prog [options] [translation_file]"
+usage = "usage: %prog [options] [language database]"
 option_list = [
     make_option("--profile",
                 action="store", type="string", dest="profile",
@@ -45,8 +45,8 @@ def module_path():
         return os.path.dirname(unicode(sys.executable, sys.getfilesystemencoding()))
     return os.path.dirname(unicode(__file__, sys.getfilesystemencoding( )))
 
-def run_spelt():
-    spelt = Spelt(module_path())
+def run_spelt(dbfilename):
+    spelt = Spelt(dbfilename, module_path())
     spelt.run()
 
 def profile(profile_file):
@@ -80,7 +80,9 @@ def main(argv):
         except IOError:
             parser.error(_("Could not open profile file '%s'") % options.profile)
     else:
-        run_spelt()
+        if not args:
+            args = ['']
+        run_spelt(args[0])
 
 if __name__ == "__main__":
     main(sys.argv)
