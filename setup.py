@@ -146,14 +146,15 @@ Name: "{group}\Language Database Examples"; Filename: "{app}\share\spelt\example
 
     # For each file type we should have something like this:
     #
-    #;File extension:
-    #Root: HKCR; Subkey: ".po"; ValueType: string; ValueName: ""; ValueData: "spelt_po"; Flags: uninsdeletevalue
-    #;Description of the file type
-    #Root: HKCR; Subkey: "spelt_po"; ValueType: string; ValueName: ""; ValueData: "Gettext PO"; Flags: uninsdeletekey
-    #;Icon to use in Explorer
-    #Root: HKCR; Subkey: "spelt_po\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\icons\spelt.ico"
-    #;The command to open the file
-    #Root: HKCR; Subkey: "spelt_po\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\run_spelt.exe"" ""%1"""
+    print >> ofi, r'''
+;File extension:
+Root: HKCR; Subkey: ".po"; ValueType: string; ValueName: ""; ValueData: "spelt_po"; Flags: uninsdeletevalue
+;Description of the file type
+Root: HKCR; Subkey: "spelt_po"; ValueType: string; ValueName: ""; ValueData: "Gettext PO"; Flags: uninsdeletekey
+;Icon to use in Explorer
+Root: HKCR; Subkey: "spelt_po\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\share\spelt\spelt.ico"
+;The command to open the file
+Root: HKCR; Subkey: "spelt_po\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\run_spelt.exe"" ""%1"""'''
 
     # Show a "Launch Spelt" checkbox on the last installer screen
     print >> ofi, r'''
