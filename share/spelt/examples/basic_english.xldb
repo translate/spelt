@@ -33,6 +33,46 @@
             <name>Verb</name>
             <shortcut>ver</shortcut>
         </part_of_speech>
+
+        <part_of_speech id="44">
+            <name>Preposition</name>
+            <shortcut>pre</shortcut>
+        </part_of_speech>
+
+        <part_of_speech id="55">
+            <name>Indefinite article</name>
+            <shortcut>iart</shortcut>
+        </part_of_speech>
+
+        <part_of_speech id="66">
+            <name>Particle</name>
+            <shortcut>par</shortcut>
+        </part_of_speech>
+
+        <part_of_speech id="77">
+            <name>Adverb</name>
+            <shortcut>adv</shortcut>
+        </part_of_speech>
+
+        <part_of_speech id="88">
+            <name>Determiner</name>
+            <shortcut>det</shortcut>
+        </part_of_speech>
+
+        <part_of_speech id="99">
+            <name>Pronoun</name>
+            <shortcut>pro</shortcut>
+        </part_of_speech>
+
+        <part_of_speech id="111">
+            <name>Proper noun</name>
+            <shortcut>pn</shortcut>
+        </part_of_speech>
+
+        <part_of_speech id="222">
+            <name>Conjunction</name>
+            <shortcut>cj</shortcut>
+        </part_of_speech>
     </parts_of_speech>
 
     <roots>
