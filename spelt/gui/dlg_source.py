@@ -44,13 +44,14 @@ class DlgSource(object):
     )
 
     # CONSTRUCTOR #
-    def __init__(self, glade_xml):
+    def __init__(self, glade_xml, icon_filename):
         """Constructor.
             @type  glade_xml: gtk.glade.XML
             @param glade_xml: The Glade XML object to load widgets from.
             """
         assert isinstance(glade_xml, gtk.glade.XML)
         self.glade_xml = glade_xml
+        self.icon_filename = icon_filename
         self.__init_widgets()
 
     # METHODS #
@@ -89,4 +90,5 @@ class DlgSource(object):
         for widget_name in widgets:
             setattr(self, widget_name, self.glade_xml.get_widget(widget_name))
 
+        self.dlg_source.set_icon_from_file(self.icon_filename)
         self.desc_buffer = self.txt_desc.get_buffer()

@@ -158,7 +158,7 @@ class GUI(object):
         )
 
         # Source dialog wrapper
-        self.dlg_source = DlgSource(self.glade)
+        self.dlg_source = DlgSource(self.glade, self.icon_filename)
         # LanguageDB loading dialog
         self.dlg_dbload = DlgDBLoad(self.glade, self)
 

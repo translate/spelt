@@ -132,6 +132,7 @@ class DlgDBLoad(object):
         for widget_name in widgets:
             setattr(self, widget_name, self.glade_xml.get_widget(widget_name))
 
+        self.dlg_dbload.set_icon_from_file(self.gui.icon_filename)
         self.notebook.set_show_tabs(False)
         # Connect signal handlers
         self.btn_next.connect('clicked', self.__on_next_clicked)
