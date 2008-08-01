@@ -146,7 +146,7 @@ Name: "{group}\Language Database Examples"; Filename: "{app}\share\spelt\example
 
     # For each file type we should have something like this:
     #
-    print >> ofi, r'''
+    print >> ofi, r'''[Registry]
 ;File extension:
 Root: HKCR; Subkey: ".xldb"; ValueType: string; ValueName: ""; ValueData: "spelt_xldb"; Flags: uninsdeletevalue
 ;Description of the file type
