@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright 2007-2008 Zuza Software Foundation
+# Copyright 2008 Zuza Software Foundation
 #
 # This file is part of Spelt
 #
@@ -49,13 +49,13 @@ def run_spelt(dbfilename):
     spelt = Spelt(dbfilename, module_path())
     spelt.run()
 
-def profile(profile_file):
+def profile(profile_file, dbfilename):
     import cProfile
     import spelt.lsprofcalltree
 
     logging.info('Staring profiling run')
     profiler = cProfile.Profile()
-    profiler.runcall(run_spelt)
+    profiler.runcall(run_spelt, dbfilename)
 
     k_cache_grind = spelt.lsprofcalltree.KCacheGrind(profiler)
     k_cache_grind.output(profile_file)
@@ -76,12 +76,12 @@ def main(argv):
 
     if options.profile != None:
         try:
-            profile(open(options.profile, 'wb'))
+            if not args: args = ['']
+            profile(open(options.profile, 'wb'), args[0])
         except IOError:
             parser.error(_("Could not open profile file '%s'") % options.profile)
     else:
-        if not args:
-            args = ['']
+        if not args: args = ['']
         run_spelt(args[0])
 
 if __name__ == "__main__":
