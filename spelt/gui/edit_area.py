@@ -21,9 +21,10 @@
 import datetime
 import gobject, gtk, gtk.glade
 
-from spelt.common       import Configuration, exceptions, _
-from spelt.models       import LanguageDB, PartOfSpeech, Root, SurfaceForm
-from spelt.gui.wordlist import WordList
+from spelt.common         import Configuration, exceptions, _
+from spelt.models         import LanguageDB, PartOfSpeech, Root, SurfaceForm
+from spelt.gui.combomodel import ComboModel
+from spelt.gui.wordlist   import WordList
 
 COL_TEXT, COL_MODEL = range(2)
 
@@ -206,10 +207,13 @@ class EditArea(object):
         if not self.langdb or not isinstance(self.langdb, LanguageDB):
             return
 
-        self.pos_store.clear()
-        self.root_store.clear()
-        [self.pos_store.append([self.pos_tostring(model), model]) for model in self.langdb.parts_of_speech]
-        [self.root_store.append([model.value, model]) for model in self.langdb.roots]
+        self.pos_store = ComboModel([ (self.pos_tostring(m), m) for m in self.langdb.parts_of_speech ])
+        self.cmb_pos.set_model(self.pos_store)
+        self.cmb_pos.child.get_completion().set_model(self.pos_store)
+
+        self.root_store = ComboModel([ (m.value, m) for m in self.langdb.roots ])
+        self.cmb_root.set_model(self.root_store)
+        self.cmb_root.child.get_completion().set_model(self.root_store)
 
     def select_root(self, root):
         """Set the root selected in the cmb_root combo box to that of the parameter.
@@ -317,7 +321,7 @@ class EditArea(object):
 
         # Initialize combo's
         pos_cell = gtk.CellRendererText()
-        self.pos_store = gtk.ListStore(str, gobject.TYPE_PYOBJECT)
+        self.pos_store = ComboModel([ ('', None) ])
         self.cmb_pos.set_model(self.pos_store)
         self.cmb_pos.set_text_column(COL_TEXT)
         self.cmb_pos.clear()
@@ -325,7 +329,7 @@ class EditArea(object):
         self.cmb_pos.add_attribute(pos_cell, 'text', COL_TEXT)
 
         root_cell = gtk.CellRendererText()
-        self.root_store = gtk.ListStore(str, gobject.TYPE_PYOBJECT)
+        self.root_store = ComboModel([ ('', None) ])
         self.cmb_root.set_model(self.root_store)
         self.cmb_root.set_text_column(COL_TEXT)
         self.cmb_root.clear()
@@ -357,7 +361,6 @@ class EditArea(object):
         self.cmb_root.child.set_completion(self.root_completion)
 
         self.__connect_signals()
-
 
     def __connect_signals(self):
         """Connects widgets' signals to their appropriate handlers.

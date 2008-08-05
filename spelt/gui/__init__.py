@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+from combomodel import ComboModel
 from dlg_dbload import DlgDBLoad
 from dlg_source import DlgSource
 from gui        import GUI
@@ -25,6 +26,7 @@ from edit_area  import EditArea
 from wordlist   import WordList
 
 __all__ = [
+    'ComboModel',
     'DlgDBLoad',
     'DlgSource',
     'EditArea',
