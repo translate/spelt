@@ -80,7 +80,7 @@ class EditArea(object):
                 self.set_sensitive(btn_ok=True, btn_add_root=False, btn_mod_root=False)
                 self.set_visible(btn_ok=True, btn_add_root=False, btn_mod_root=False)
 
-            if self.cmb_root.get_active() < 0:
+            if self._new_root:
                 # If we are working with a new root, there is not sense in
                 # trying to modify it.
                 self.set_visible(btn_mod_root=False)
@@ -96,9 +96,9 @@ class EditArea(object):
                 btn.grab_focus()
 
     def check_root_text(self, text=None):
-        """If text was entered into cmb_root, handle that text."""
+        """If text was entered into C{ent_root}, handle that text."""
         if text is None:
-            text = self.cmb_root.child.get_text()
+            text = self.ent_root.get_text()
 
         if not text:
             self.set_status(_('A root must be specified.'))
@@ -114,12 +114,13 @@ class EditArea(object):
         else:
             # If we get here, we have a new root on our hands
             self.select_root(None) # Deselect root
-            self.cmb_root.child.set_text(text)
+            self.ent_root.set_text(text)
             self.current_root = Root(
                 value   = unicode(text),
                 user_id = self.config.user['id'],
                 date    = datetime.datetime.now()
             )
+            self._new_root = True
             self.select_pos(None)  # Deselect POS
 
             self.set_visible(btn_ok=False, btn_add_root=True)
@@ -172,7 +173,7 @@ class EditArea(object):
             else:
                 raise exceptions.RootError(_( 'No root object found with ID %d' % (sf.root_id) ))
 
-        self.cmb_root.grab_focus()
+        self.ent_root.grab_focus()
 
     def pos_tostring(self, pos):
         """How a PartOfSpeech object should be represented as a string in the GUI.
@@ -211,44 +212,34 @@ class EditArea(object):
         self.cmb_pos.set_model(self.pos_store)
         self.cmb_pos.child.get_completion().set_model(self.pos_store)
 
-        self.root_store = ComboModel([ (m.value, m) for m in self.langdb.roots ])
-        self.cmb_root.set_model(self.root_store)
-        self.cmb_root.child.get_completion().set_model(self.root_store)
-
     def select_root(self, root):
-        """Set the root selected in the cmb_root combo box to that of the parameter.
+        """Set the root selected in the C{ent_root} combo box to that of the parameter.
 
-            @type  root: models.Root
+            @type  root: spelt.models.Root
             @param root: The root to select in the combo box."""
         if root is None:
             # Deselect root
-            self.cmb_root.set_active(-1)
-            self.cmb_root.child.set_text('')
             self.select_pos(None) # This deselects the part of speech too.
-            self.cmb_root.grab_focus()
             self.set_sensitive(cmb_pos=False)
+            self.ent_root.set_text('')
+            self.ent_root.grab_focus()
             return
 
         assert isinstance(root, Root)
-        iter = self.root_store.get_iter_first()
 
-        while self.root_store.iter_is_valid(iter):
-            if self.root_store.get_value(iter, COL_MODEL) == root:
-                self.cmb_root.set_active_iter(iter)
-                self.current_root = root
-                self.set_sensitive(cmb_pos=True)
+        self.current_root = root
+        self._new_root = False
+        self.ent_root.set_text(root.value)
+        self.set_sensitive(cmb_pos=True)
 
-                pos_found = self.langdb.find(id=root.pos_id, section='parts_of_speech')
-                # The pos_found list can have a maximum of 1 element, because we
-                # search the database on ID's. ID's are guaranteed to be unique by the
-                # models (via it's inheritence of IDManager).
-                if pos_found:
-                    self.select_pos(pos_found[0])
-                else:
-                    raise exceptions.PartOfSpeechError(_( 'No part of speech found with ID %d' % (root.pos_id) ))
-                break
-
-            iter = self.root_store.iter_next(iter)
+        pos_found = self.langdb.find(id=root.pos_id, section='parts_of_speech')
+        # The pos_found list can have a maximum of 1 element, because we
+        # search the database on ID's. ID's are guaranteed to be unique by the
+        # models (via it's inheritence of IDManager).
+        if pos_found:
+            self.select_pos(pos_found[0])
+        else:
+            raise exceptions.PartOfSpeechError(_( 'No part of speech found with ID %d' % (root.pos_id) ))
 
     def select_pos(self, pos):
         """Set the part of speech selected in the cmb_pos combo box to that of
@@ -306,7 +297,7 @@ class EditArea(object):
             'lbl_word',
             'btn_reject',
             'btn_ignore',
-            'cmb_root',
+            'ent_root',
             'cmb_pos',
             'lbl_status',
             'btn_ok',
@@ -328,14 +319,6 @@ class EditArea(object):
         self.cmb_pos.pack_start(pos_cell)
         self.cmb_pos.add_attribute(pos_cell, 'text', COL_TEXT)
 
-        root_cell = gtk.CellRendererText()
-        self.root_store = ComboModel([ ('', None) ])
-        self.cmb_root.set_model(self.root_store)
-        self.cmb_root.set_text_column(COL_TEXT)
-        self.cmb_root.clear()
-        self.cmb_root.pack_start(root_cell)
-        self.cmb_root.add_attribute(root_cell, 'text', COL_TEXT)
-
         # Setup autocompletion
         pos_cell = gtk.CellRendererText()
         self.pos_completion = gtk.EntryCompletion()
@@ -348,17 +331,6 @@ class EditArea(object):
         self.pos_completion.set_text_column(COL_TEXT)
         self.pos_completion.props.text_column = COL_TEXT
         self.cmb_pos.child.set_completion(self.pos_completion)
-
-        root_cell = gtk.CellRendererText()
-        self.root_completion = gtk.EntryCompletion()
-        self.root_completion.clear()
-        self.root_completion.pack_start(root_cell)
-        self.root_completion.set_cell_data_func(root_cell, self.__render_root)
-        self.root_completion.set_inline_completion(True)
-        self.root_completion.set_model(self.root_store)
-        self.root_completion.set_match_func(self.__match_root)
-        self.root_completion.props.text_column = COL_TEXT
-        self.cmb_root.child.set_completion(self.root_completion)
 
         self.__connect_signals()
 
@@ -376,31 +348,24 @@ class EditArea(object):
         self.btn_reject.connect('clicked', self.__on_btn_reject_clicked)
         # Combo's
         self.cmb_pos.connect('changed', self.__on_cmb_changed, self.select_pos)
-        self.cmb_root.connect('changed', self.__on_cmb_changed, self.select_root)
         # ComboBoxEntry's Entry
         self.cmb_pos.child.connect('activate', self.__on_entry_activated, self.check_pos_text)
-        self.cmb_root.child.connect('activate', self.__on_entry_activated, self.check_root_text)
-
         self.cmb_pos.child.connect('changed', self.__on_entry_changed, self.select_pos)
-        self.cmb_root.child.connect('changed', self.__on_entry_changed, self.select_root)
-
         self.cmb_pos.child.connect('key-press-event', self.__on_entry_key_press_event, self.check_pos_text)
-        self.cmb_root.child.connect('key-press-event', self.__on_entry_key_press_event, self.check_root_text)
+
+        # Entry's
+        self.ent_root.connect('activate', self.__on_entry_activated, self.check_root_text)
+        self.ent_root.connect('changed', self.__on_root_changed)
+        self.ent_root.connect('key-press-event', self.__on_entry_key_press_event, self.check_root_text)
+
         # EntryCompletions
         self.pos_completion.connect('match-selected', self.__on_match_selected, self.cmb_pos, self.select_pos)
-        self.root_completion.connect('match-selected', self.__on_match_selected, self.cmb_root, self.select_root)
 
     def __match_pos(self, completion, key, iter):
         model = self.pos_store.get_value(iter, COL_MODEL)
         if model is None:
             return False
         return model.shortcut.lower().startswith(key) or model.name.lower().startswith(key)
-
-    def __match_root(self, completion, key, iter):
-        model = self.root_store.get_value(iter, COL_MODEL)
-        if model is None:
-            return False
-        return model.value.startswith(key)
 
     # GUI SIGNAL HANDLERS #
     def __clear_status(self):
@@ -418,6 +383,7 @@ class EditArea(object):
             )
         self.current_root.pos_id = self.current_pos.id
         self.langdb.add_root(self.current_root)
+        self._new_root = False
 
         if self.cmb_pos.get_active() < 0:
             self.langdb.add_part_of_speech(self.current_pos)
@@ -527,6 +493,13 @@ class EditArea(object):
 
         return True
 
+    def __on_root_changed(self, ent_root):
+        root_text = ent_root.get_text()
+
+        if len(root_text) == 0:
+            self.select_root(None)
+            return
+
     def __render_pos(self, layout, cell, store, iter):
         """Cell data function that renders a part-of-speech from it's model in
             the gtk.ListStore.
@@ -537,14 +510,3 @@ class EditArea(object):
             (double clicked) line (a models.PartOfSpeech model in this case)."""
         model = store.get_value(iter, COL_MODEL)
         cell.set_property('text', self.pos_tostring(model))
-
-    def __render_root(self, layout, cell, store, iter):
-        """Cell data function that renders a root word from it's model in
-            the gtk.ListStore.
-
-            See gtk.CellLayout.set_cell_data_func()'s documentation for
-            description of parameters. For the sake of practicality, not that
-            "store.get_value(iter, COL_MODEL)" returns the object from the selected
-            (double clicked) line (a models.Root model in this case)."""
-        model = store.get_value(iter, COL_MODEL)
-        cell.set_property('text', self.root_tostring(model))
