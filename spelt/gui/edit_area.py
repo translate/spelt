@@ -358,7 +358,6 @@ class EditArea(object):
 
         self.__connect_signals()
 
-        self.refresh()
 
     def __connect_signals(self):
         """Connects widgets' signals to their appropriate handlers.
