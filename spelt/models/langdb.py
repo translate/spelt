@@ -57,6 +57,12 @@ class LanguageDB(object):
     surface_forms =   property(lambda self: self.sections['surface_forms'])
     users =           property(lambda self: self.sections['users'])
 
+    parts_of_speech_ids = property(lambda self: self.section_ids['parts_of_speech'])
+    roots_ids =           property(lambda self: self.section_ids['roots'])
+    sources_ids =         property(lambda self: self.section_ids['sources'])
+    surface_forms_ids =   property(lambda self: self.section_ids['surface_forms'])
+    users_ids =           property(lambda self: self.section_ids['users'])
+
     # CONSTRUCTOR #
     # TODO: Use file object instead of forcing opening from filename
     def __init__(self, lang=None, filename=None):
@@ -66,7 +72,18 @@ class LanguageDB(object):
             """
         self.filename = None
         self.lang = lang
-        self.sections = dict(zip( self.model_list_map.values(), map(lambda x: set(), self.model_list_map.values()) ))
+        self.sections = dict(
+            zip(
+                self.model_list_map.values(),
+                map(lambda x: set(), self.model_list_map.values())
+            )
+        )
+        self.section_ids = dict(
+            zip(
+                self.model_list_map.values(),
+                map(lambda x: dict(), self.model_list_map.values())
+            )
+        )
 
         if not filename is None and os.path.exists(filename):
             self.load(filename)
@@ -81,9 +98,10 @@ class LanguageDB(object):
             @param pos: The part-of-speech model to add to the database.
             """
         assert isinstance(pos, PartOfSpeech)
-        if pos in self.parts_of_speech:
+        if self.parts_of_speech_ids.has_key(pos.id):
             raise exceptions.DuplicateModelError(str(pos))
 
+        self.parts_of_speech_ids[pos.id] = pos
         self.parts_of_speech.add(pos)
         self.xmlroot.parts_of_speech.append(pos.elem)
 
@@ -92,9 +110,10 @@ class LanguageDB(object):
             @type  root: Root
             @param root: The word root model to add to the database.
             """
-        if root in self.roots:
+        if self.roots_ids.has_key(root.id):
             raise exceptions.DuplicateModelError(str(root))
 
+        self.roots_ids[root.id] = root
         self.roots.add(root)
         self.xmlroot.roots.append(root.elem)
 
@@ -116,9 +135,10 @@ class LanguageDB(object):
             @param sf: The surface form model to add to the database.
             """
         #assert isinstance(sf, SurfaceForm)
-        if sf in self.surface_forms:
+        if self.surface_forms_ids.has_key(sf.id):
             raise exceptions.DuplicateModelError(str(sf))
 
+        self.surface_forms_ids[sf.id] = sf
         self.surface_forms.add(sf)
         self.xmlroot.surface_forms.append(sf.elem)
 
@@ -128,9 +148,10 @@ class LanguageDB(object):
             @param usr: The user model to add to the database.
             """
         assert isinstance(usr, User)
-        if usr in self.users:
+        if self.users_ids.has_key(usr.id):
             raise exceptions.DuplicateModelError(str(usr))
 
+        self.users[usr.id] = usr
         self.users.add(usr)
         self.xmlroot.users.append(usr.elem)
 
@@ -156,6 +177,11 @@ class LanguageDB(object):
 
         if not section is None and section not in self.model_list_map.values():
             raise InvalidSectionError(section)
+
+        # Special case: if only the ID and section is specified, use the faster
+        # dictionary lookup to find our model.
+        if not kwargs and id and section:
+            return [ getattr(self, section+"_ids")[id] ]
 
         sections = section and [getattr(self, section)] or [getattr(self, s) for s in self.model_list_map.values()]
         models = []
@@ -238,6 +264,7 @@ class LanguageDB(object):
                 setattr(xmlroot, section, objectify.Element(section))
                 raise LanguageDBFormatWarning(_('No top-level "%s" XML element.') % section)
 
+            mids = getattr(self, section+"_ids")
             mset = getattr(self, section)
             for child in getattr(xmlroot, section).iterchildren():
                 if self.elem_is_xml_comment(child):
@@ -247,6 +274,7 @@ class LanguageDB(object):
                 if model in mset:
                     raise exceptions.DuplicateModelError(str(model))
 
+                mids[model.id] = model
                 mset.add(model)
 
     def save(self, filename=None):
