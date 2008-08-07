@@ -33,6 +33,9 @@ class EditArea(object):
     """
 
     COL_TEXT, COL_MODEL = range(2)
+    COMPLETION_POPUP_DELAY = 500
+    EMPTY_COMBOMODEL = ComboModel([ ('', None) ])
+    MAX_COMPLETION_LENGTH = 5
 
     # CONSTRUCTOR #
     def __init__(self, glade_xml, wordlist, langdb=None, gui=None):
@@ -52,6 +55,8 @@ class EditArea(object):
 
         self.wordlist.word_selected_handlers.append(self.on_surface_form_selected)
         self.__init_widgets()
+
+        self.root_comp_timeout = 0
 
     # METHODS #
     def check_pos_text(self, text=None):
@@ -199,8 +204,10 @@ class EditArea(object):
             @return     The string representation of the parameter Root."""
         if not root:
             return ''
-        pos = self.langdb.find(id=root.pos_id, section='parts_of_speech')[0]
-        return u"%s (%s)" % (root.value, pos.name)
+        pos = self.langdb.find(id=root.pos_id, section='parts_of_speech')
+        if not pos:
+            return u"%s (<no part-of-speech>)" % (root.value)
+        return u"%s (%s)" % (root.value, pos[0].name)
 
     def refresh(self, langdb=None):
         """Reload data from self.langdb database."""
@@ -213,6 +220,9 @@ class EditArea(object):
         self.pos_store = ComboModel([ (self.pos_tostring(m), m) for m in self.langdb.parts_of_speech ])
         self.cmb_pos.set_model(self.pos_store)
         self.cmb_pos.child.get_completion().set_model(self.pos_store)
+
+        self.root_store = ComboModel([ (self.root_tostring(m), m) for m in self.langdb.roots ])
+        self.ent_root.get_completion().set_model(self.root_store)
 
     def select_root(self, root):
         """Set the root selected in the C{ent_root} combo box to that of the parameter.
@@ -314,7 +324,7 @@ class EditArea(object):
 
         # Initialize combo's
         pos_cell = gtk.CellRendererText()
-        self.pos_store = ComboModel([ ('', None) ])
+        self.pos_store = self.EMPTY_COMBOMODEL
         self.cmb_pos.set_model(self.pos_store)
         self.cmb_pos.set_text_column(self.COL_TEXT)
         self.cmb_pos.clear()
@@ -332,6 +342,18 @@ class EditArea(object):
         self.pos_completion.set_match_func(self.__match_pos)
         self.pos_completion.props.text_column = self.COL_TEXT
         self.cmb_pos.child.set_completion(self.pos_completion)
+
+        self.root_store = self.EMPTY_COMBOMODEL
+        root_cell = gtk.CellRendererText()
+        self.root_completion = gtk.EntryCompletion()
+        self.root_completion.clear()
+        self.root_completion.pack_start(root_cell)
+        self.root_completion.set_cell_data_func(root_cell, self.__render_root)
+        self.root_completion.set_inline_completion(True)
+        self.root_completion.set_match_func(lambda *args: True) # Always match, because the model will already be filtered.
+        self.root_completion.set_model(self.root_store)
+        self.root_completion.props.text_column = self.COL_TEXT
+        self.ent_root.set_completion(self.root_completion)
 
         self.__connect_signals()
 
@@ -356,11 +378,12 @@ class EditArea(object):
 
         # Entry's
         self.ent_root.connect('activate', self.__on_entry_activated, self.check_root_text)
-        self.ent_root.connect('changed', self.__on_root_changed)
+        self.ent_root.connect('changed', self.__on_root_changed, self.ent_root.get_completion())
         self.ent_root.connect('key-press-event', self.__on_entry_key_press_event, self.check_root_text)
 
         # EntryCompletions
-        self.pos_completion.connect('match-selected', self.__on_match_selected, self.cmb_pos, self.select_pos)
+        self.pos_completion.connect('match-selected', self.__on_match_selected, self.select_pos)
+        self.root_completion.connect('match-selected', self.__on_match_selected, self.select_root)
 
     def __match_pos(self, completion, key, iter):
         model = self.pos_store.get_value(iter, self.COL_MODEL)
@@ -371,6 +394,25 @@ class EditArea(object):
     # GUI SIGNAL HANDLERS #
     def __clear_status(self):
         self.lbl_status.hide()
+    def _complete_root(self):
+        self.compl_count = 0
+
+        def check(model, iter, text):
+            #print '["%s".startswith("%s")] [%d < %d]' % (model[iter][0].lower(), text, self.compl_count, self.MAX_COMPLETION_LENGTH)
+            if model[iter][self.COL_TEXT].lower().startswith(text) and self.compl_count < self.MAX_COMPLETION_LENGTH:
+                self.compl_count += 1
+                return True
+            return False
+
+        filter = self.root_store.filter_new()
+        filter.set_visible_func(check, self.ent_root.get_text().lower())
+        self.ent_root.get_completion().set_model(filter)
+        self.ent_root.get_completion().complete()
+
+        self.root_comp_timeout = 0
+
+        return False
+
         return False
 
     def __on_btn_add_root_clicked(self, btn):
@@ -477,9 +519,8 @@ class EditArea(object):
             check_func()
             return True
 
-    def __on_match_selected(self, completion, store, iter, combo, select_model):
-        """Handler for the "match-selected" event of ComboBoxEntries'
-            EntryCompletions.
+    def __on_match_selected(self, completion, store, iter, select_model):
+        """Handler for the "match-selected" event of C{gtk.EntryCompletion}s.
 
             See the PyGtk API documentation for the definition of the first 3
             parameters. It should be obvious, though.
@@ -488,18 +529,25 @@ class EditArea(object):
             @type  select_model: function
             @param select_model: The function to which the selected model
                 should be passed to handle its selection."""
-        child_iter = store.convert_iter_to_child_iter(iter)
-        model = combo.get_model().get_value(child_iter, self.COL_MODEL)
+        model = store[iter][self.COL_MODEL]
         select_model(model)
 
         return True
 
-    def __on_root_changed(self, ent_root):
+    def __on_root_changed(self, ent_root, completion):
         root_text = ent_root.get_text()
 
         if len(root_text) == 0:
             self.select_root(None)
             return
+
+        if len(root_text) >= completion.get_property('minimum_key_length'):
+            if self.root_comp_timeout:
+                gobject.source_remove(self.root_comp_timeout)
+                self.root_comp_timeout = 0
+
+            completion.set_model(self.EMPTY_COMBOMODEL)
+            self.root_comp_timeout = gobject.timeout_add(self.COMPLETION_POPUP_DELAY, self._complete_root)
 
     def __render_pos(self, layout, cell, store, iter):
         """Cell data function that renders a part-of-speech from it's model in
@@ -511,3 +559,7 @@ class EditArea(object):
             (double clicked) line (a models.PartOfSpeech model in this case)."""
         model = store.get_value(iter, self.COL_MODEL)
         cell.set_property('text', self.pos_tostring(model))
+
+    def __render_root(self, layout, cell, store, iter):
+        model = store.get_value(iter, self.COL_MODEL)
+        cell.set_property('text', self.root_tostring(model))
