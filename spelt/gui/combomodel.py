@@ -49,7 +49,7 @@ class ComboModel(gtk.GenericTreeModel):
 
     def on_get_value(self, rowref, column):
         if column in (0, 1):
-            return self._rows[rowref][column] or None
+            return self._rows[rowref][column]
         return None
 
     def on_iter_next(self, rowref):
