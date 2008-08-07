@@ -26,12 +26,14 @@ from spelt.models         import LanguageDB, PartOfSpeech, Root, SurfaceForm
 from spelt.gui.combomodel import ComboModel
 from spelt.gui.wordlist   import WordList
 
-COL_TEXT, COL_MODEL = range(2)
 
 class EditArea(object):
     """
     This class represents the editing area on the GUI.
     """
+
+    COL_TEXT, COL_MODEL = range(2)
+
     # CONSTRUCTOR #
     def __init__(self, glade_xml, wordlist, langdb=None, gui=None):
         """Constructor.
@@ -260,7 +262,7 @@ class EditArea(object):
         iter = self.pos_store.get_iter_first()
 
         while self.pos_store.iter_is_valid(iter):
-            if self.pos_store.get_value(iter, COL_MODEL) == pos:
+            if self.pos_store.get_value(iter, self.COL_MODEL) == pos:
                 self.cmb_pos.set_active_iter(iter)
                 self.current_pos = pos
 
@@ -314,10 +316,10 @@ class EditArea(object):
         pos_cell = gtk.CellRendererText()
         self.pos_store = ComboModel([ ('', None) ])
         self.cmb_pos.set_model(self.pos_store)
-        self.cmb_pos.set_text_column(COL_TEXT)
+        self.cmb_pos.set_text_column(self.COL_TEXT)
         self.cmb_pos.clear()
         self.cmb_pos.pack_start(pos_cell)
-        self.cmb_pos.add_attribute(pos_cell, 'text', COL_TEXT)
+        self.cmb_pos.add_attribute(pos_cell, 'text', self.COL_TEXT)
 
         # Setup autocompletion
         pos_cell = gtk.CellRendererText()
@@ -328,8 +330,7 @@ class EditArea(object):
         self.pos_completion.set_inline_completion(True)
         self.pos_completion.set_model(self.pos_store)
         self.pos_completion.set_match_func(self.__match_pos)
-        self.pos_completion.set_text_column(COL_TEXT)
-        self.pos_completion.props.text_column = COL_TEXT
+        self.pos_completion.props.text_column = self.COL_TEXT
         self.cmb_pos.child.set_completion(self.pos_completion)
 
         self.__connect_signals()
@@ -362,7 +363,7 @@ class EditArea(object):
         self.pos_completion.connect('match-selected', self.__on_match_selected, self.cmb_pos, self.select_pos)
 
     def __match_pos(self, completion, key, iter):
-        model = self.pos_store.get_value(iter, COL_MODEL)
+        model = self.pos_store.get_value(iter, self.COL_MODEL)
         if model is None:
             return False
         return model.shortcut.lower().startswith(key) or model.name.lower().startswith(key)
@@ -456,7 +457,7 @@ class EditArea(object):
         iter = combo.get_active_iter()
 
         if not iter is None:
-            model = combo.get_model().get_value(iter, COL_MODEL)
+            model = combo.get_model().get_value(iter, self.COL_MODEL)
             select_model(model)
 
     def __on_entry_activated(self, entry, text_handler):
@@ -488,7 +489,7 @@ class EditArea(object):
             @param select_model: The function to which the selected model
                 should be passed to handle its selection."""
         child_iter = store.convert_iter_to_child_iter(iter)
-        model = combo.get_model().get_value(child_iter, COL_MODEL)
+        model = combo.get_model().get_value(child_iter, self.COL_MODEL)
         select_model(model)
 
         return True
@@ -508,5 +509,5 @@ class EditArea(object):
             description of parameters. For the sake of practicality, not that
             "store.get_value(iter, COL_MODEL)" returns the object from the selected
             (double clicked) line (a models.PartOfSpeech model in this case)."""
-        model = store.get_value(iter, COL_MODEL)
+        model = store.get_value(iter, self.COL_MODEL)
         cell.set_property('text', self.pos_tostring(model))
