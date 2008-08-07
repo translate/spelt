@@ -251,7 +251,9 @@ class EditArea(object):
         if pos_found:
             self.select_pos(pos_found[0])
         else:
-            raise exceptions.PartOfSpeechError(_( 'No part of speech found with ID %d' % (root.pos_id) ))
+            self.cmb_pos.grab_focus()
+            # The exception commented out below should be changed to a warning
+            #raise exceptions.PartOfSpeechError(_( 'No part of speech found with ID %d' % (root.pos_id) ))
 
     def select_pos(self, pos):
         """Set the part of speech selected in the cmb_pos combo box to that of
@@ -392,13 +394,10 @@ class EditArea(object):
         return model.shortcut.lower().startswith(key) or model.name.lower().startswith(key)
 
     # GUI SIGNAL HANDLERS #
-    def __clear_status(self):
-        self.lbl_status.hide()
     def _complete_root(self):
         self.compl_count = 0
 
         def check(model, iter, text):
-            #print '["%s".startswith("%s")] [%d < %d]' % (model[iter][0].lower(), text, self.compl_count, self.MAX_COMPLETION_LENGTH)
             if model[iter][self.COL_TEXT].lower().startswith(text) and self.compl_count < self.MAX_COMPLETION_LENGTH:
                 self.compl_count += 1
                 return True
@@ -413,6 +412,8 @@ class EditArea(object):
 
         return False
 
+    def __clear_status(self):
+        self.lbl_status.hide()
         return False
 
     def __on_btn_add_root_clicked(self, btn):
