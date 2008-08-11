@@ -62,7 +62,7 @@ def main(argv):
             parser.error(_("Could not open log file '%s'") % options.log)
 
     if options.profile != None:
-        from spelt.lsprofcalltree import profilefunc
+        from devsupport.profiling import profilefunc
         try:
             if not args: args = ['']
             profilefunc(open(options.profile, 'wb'), run_spelt, args[0])
