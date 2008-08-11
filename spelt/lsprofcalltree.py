@@ -85,3 +85,15 @@ class KCacheGrind(object):
             print >> out_file, 'calls=%d %d' % (
                 subentry.callcount, code.co_firstlineno)
         print >> out_file, '%d %d' % (lineno, totaltime)
+
+
+def profilefunc(profile_file, func, *args):
+    import cProfile
+
+    profiler = cProfile.Profile()
+    profiler.runcall(func, *args)
+
+    k_cache_grind = KCacheGrind(profiler)
+    k_cache_grind.output(profile_file)
+
+    profile_file.close()

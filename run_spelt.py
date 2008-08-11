@@ -49,19 +49,6 @@ def run_spelt(dbfilename):
     spelt = Spelt(dbfilename, module_path())
     spelt.run()
 
-def profile(profile_file, dbfilename):
-    import cProfile
-    import spelt.lsprofcalltree
-
-    logging.info('Staring profiling run')
-    profiler = cProfile.Profile()
-    profiler.runcall(run_spelt, dbfilename)
-
-    k_cache_grind = spelt.lsprofcalltree.KCacheGrind(profiler)
-    k_cache_grind.output(profile_file)
-
-    profile_file.close()
-
 def main(argv):
     options, args = parser.parse_args(argv[1:])
 
@@ -75,9 +62,10 @@ def main(argv):
             parser.error(_("Could not open log file '%s'") % options.log)
 
     if options.profile != None:
+        from spelt.lsprofcalltree import profilefunc
         try:
             if not args: args = ['']
-            profile(open(options.profile, 'wb'), args[0])
+            profilefunc(open(options.profile, 'wb'), run_spelt, args[0])
         except IOError:
             parser.error(_("Could not open profile file '%s'") % options.profile)
     else:
