@@ -181,7 +181,10 @@ class LanguageDB(object):
         # Special case: if only the ID and section is specified, use the faster
         # dictionary lookup to find our model.
         if not kwargs and id and section:
-            return [ getattr(self, section+"_ids")[id] ]
+            try:
+                return [ getattr(self, section+"_ids")[id] ]
+            except Exception:
+                pass # If we couldn't find the model the "fast" way, search for it like in the olden times
 
         sections = section and [getattr(self, section)] or [getattr(self, s) for s in self.model_list_map.values()]
         models = []
