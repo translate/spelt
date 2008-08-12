@@ -132,8 +132,7 @@ class EditArea(object):
 
             self.set_visible(btn_ok=False, btn_add_root=True)
             self.set_sensitive(cmb_pos=True, btn_add_root=False)
-
-        self.cmb_pos.child.grab_focus()
+            self.cmb_pos.child.grab_focus()
 
     def on_surface_form_selected(self, sf):
         """A proxied event handler for when a surface form is selected in the
@@ -221,7 +220,7 @@ class EditArea(object):
         self.cmb_pos.set_model(self.pos_store)
         self.cmb_pos.child.get_completion().set_model(self.pos_store)
 
-        self.root_store = ComboModel([ (self.root_tostring(m), m) for m in self.langdb.roots ])
+        self.root_store = ComboModel([ (m.value, m) for m in self.langdb.roots ])
         self.ent_root.get_completion().set_model(self.root_store)
 
     def select_root(self, root):
@@ -352,7 +351,6 @@ class EditArea(object):
         self.root_completion.clear()
         self.root_completion.pack_start(root_cell)
         self.root_completion.set_cell_data_func(root_cell, self.__render_root)
-        self.root_completion.set_inline_completion(True)
         self.root_completion.set_match_func(lambda *args: True) # Always match, because the model will already be filtered.
         self.root_completion.set_model(self.root_store)
         self.root_completion.props.text_column = self.COL_TEXT
@@ -407,7 +405,7 @@ class EditArea(object):
         filter = self.root_store.filter_new()
         filter.set_visible_func(check, self.ent_root.get_text().lower())
         self.ent_root.get_completion().set_model(filter)
-        self.ent_root.get_completion().complete()
+        self.ent_root.get_completion().insert_prefix()
 
         self.root_comp_timeout = 0
 
@@ -433,7 +431,7 @@ class EditArea(object):
         if self.cmb_pos.get_active() < 0:
             self.langdb.add_part_of_speech(self.current_pos)
 
-        self.refresh()
+        self.root_store = ComboModel(self.root_store._rows + [(self.current_root.value, self.current_root)])
 
         # Update GUI
         self.set_sensitive(btn_ok=True, btn_add_root=False, btn_mod_root=False)
@@ -458,8 +456,6 @@ class EditArea(object):
         self.current_root.date    = datetime.datetime.now()
         self.current_root.pos_id  = self.current_pos.id
         self.current_root.user_id = self.config.user['id']
-
-        self.refresh()
 
         # Update GUI
         self.set_sensitive(btn_ok=True, btn_add_root=False, btn_mod_root=False)
