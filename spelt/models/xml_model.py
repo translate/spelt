@@ -82,15 +82,16 @@ class XMLModel(IDManager):
     # SPECIAL METHODS #
     def __getattribute__(self, name):
         super_getattr = super(XMLModel, self).__getattribute__
+        elem = super_getattr('elem')
 
         if name in super_getattr('attribs'):
             if name == 'id' or name.endswith('_id'):
                 # Automatically convert ID's to int()s
-                return int(super_getattr('elem').get(name))
+                return int(elem.attrib[name])
             else:
-                return super_getattr('elem').get(name)
+                return elem.attrib[name]
         elif name in super_getattr('values'):
-            return unicode(getattr(super_getattr('elem'), name))
+            return unicode(getattr(elem, name))
 
         return super_getattr(name)
 
