@@ -72,6 +72,7 @@ class LanguageDB(object):
             """
         self.filename = None
         self.lang = lang
+        self.root_hashes = {}
         self.sections = dict(
             zip(
                 self.model_list_map.values(),
@@ -114,6 +115,7 @@ class LanguageDB(object):
             raise exceptions.DuplicateModelError(str(root))
 
         self.roots_ids[root.id] = root
+        self.root_hashes[hash(root.value)] = root
         self.roots.add(root)
         self.xmlroot.roots.append(root.elem)
 
@@ -185,6 +187,15 @@ class LanguageDB(object):
                 return [ getattr(self, section+"_ids")[id] ]
             except Exception:
                 pass # If we couldn't find the model the "fast" way, search for it like in the olden times
+
+        # Special case: if section="roots" and the "value" parameter is given,
+        # use self.root_hashes to speed things up.
+        if section == 'roots' and kwargs.has_key('value'):
+            try:
+                return [ self.root_hashes[hash(kwargs['value'])] ]
+            except KeyError:
+                return []
+                pass # Fall back to default search if we couldn't find the root via the hash-table
 
         sections = section and [getattr(self, section)] or [getattr(self, s) for s in self.model_list_map.values()]
         models = []
@@ -279,6 +290,10 @@ class LanguageDB(object):
 
                 mids[model.id] = model
                 mset.add(model)
+
+        # Fill self.root_hashes from self.roots_ids
+        for root in self.roots_ids.values():
+            self.root_hashes[hash(root.value)] = root
 
     def save(self, filename=None):
         """Save the represented language database to the specified file.
