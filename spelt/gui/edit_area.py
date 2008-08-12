@@ -250,6 +250,7 @@ class EditArea(object):
         # models (via it's inheritence of IDManager).
         if pos_found:
             self.select_pos(pos_found[0])
+            self.btn_ok.grab_focus()
         else:
             self.cmb_pos.grab_focus()
             # The exception commented out below should be changed to a warning
