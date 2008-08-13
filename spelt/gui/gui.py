@@ -52,10 +52,11 @@ class GUI(object):
     RESPONSE_OK, RESPONSE_CANCEL = range(2)
 
     # CONSTRUCTOR #
-    def __init__(self, dbfilename, glade_filename, icon_filename):
+    def __init__(self, dbfilename, glade_filename, icon_filename, splash_logo):
         self.glade = gtk.glade.XML(glade_filename)
         self.config = Configuration()
         self.changes_made = False
+        self.dbfilename = dbfilename
         self.icon_filename = icon_filename
 
         # Main window
@@ -65,39 +66,9 @@ class GUI(object):
 
         self.__create_dialogs()
 
-        # Load last database
-        db = LanguageDB(lang='')
-        self.config.current_database = db
-
-        if dbfilename:
-            dbfilename = os.path.abspath(dbfilename)
-
-        if os.path.exists(dbfilename) and dbfilename != self.config.general['last_langdb_path']:
-            if not self.load_langdb(dbfilename):
-                self.quit()
-        elif os.path.exists(self.config.general['last_langdb_path']):
-            db.load(self.config.general['last_langdb_path'])
-            fn = os.path.split(db.filename)[-1]
-            self.main_window.set_title('Spelt - %(langdb_filename)s' % {'langdb_filename': fn})
-        else:
-            # If we couldn't find the previous database, act as if this is a
-            # first run.
-            if not self.load_langdb():
-                self.quit()
-
-        self.menu      = Menu(self.glade, gui=self)
-        self.word_list = WordList(self.glade, langdb=db, gui=self)
-        self.edit_area = EditArea(self.glade, self.word_list, langdb=db, gui=self)
-
-        self.word_list.word_selected_handlers.append(self.check_work_done)
-
-        # Check if this is the first time the program is run
-        if self.config.user['id'] == 0:
-            if not self.load_langdb():
-                self.quit()
-
-        self.main_window.show_all()
-        self.reload_database()
+        self.splash = self.glade.get_widget('wnd_splash')
+        self.splash.show_all()
+        self.glade.get_widget('img_splash').set_from_file(splash_logo)
 
     def __del__(self):
         """Destructor."""
@@ -250,6 +221,43 @@ class GUI(object):
         self.main_window.set_title('Spelt - %(langdb_filename)s' % {'langdb_filename': fn})
 
         return True
+
+    def show(self):
+        # Load last database
+        db = LanguageDB(lang='')
+        self.config.current_database = db
+
+        if self.dbfilename:
+            self.dbfilename = os.path.abspath(self.dbfilename)
+
+        if os.path.exists(self.dbfilename) and self.dbfilename != self.config.general['last_langdb_path']:
+            if not self.load_langdb(self.dbfilename):
+                self.quit()
+        elif os.path.exists(self.config.general['last_langdb_path']):
+            db.load(self.config.general['last_langdb_path'])
+            fn = os.path.split(db.filename)[-1]
+            self.main_window.set_title('Spelt - %(langdb_filename)s' % {'langdb_filename': fn})
+        else:
+            # If we couldn't find the previous database, act as if this is a
+            # first run.
+            if not self.load_langdb():
+                self.quit()
+
+        self.splash.hide()
+
+        self.menu      = Menu(self.glade, gui=self)
+        self.word_list = WordList(self.glade, langdb=db, gui=self)
+        self.edit_area = EditArea(self.glade, self.word_list, langdb=db, gui=self)
+
+        self.word_list.word_selected_handlers.append(self.check_work_done)
+
+        # Check if this is the first time the program is run
+        if self.config.user['id'] == 0:
+            if not self.load_langdb():
+                self.quit()
+
+        self.main_window.show_all()
+        self.reload_database()
 
     def show_error(self, text, title=_('Error!')):
         self.dlg_error.set_markup(escape(text))

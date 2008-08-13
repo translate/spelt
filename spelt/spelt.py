@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import gobject
 import gtk
 import os
 
@@ -60,7 +61,8 @@ class Spelt(object):
         self.gui = GUI(
             dbfilename,
             get_data_file_abs_name(basepath, 'spelt.glade'),
-            get_data_file_abs_name(basepath, 'spelt.ico')
+            get_data_file_abs_name(basepath, 'spelt.ico'),
+            get_data_file_abs_name(basepath, 'splash_logo.png')
         )
 
     def find_glade(self, basepath, glade_filename):
@@ -76,4 +78,5 @@ class Spelt(object):
 
     def run(self):
         """Calls gtk.main()"""
+        gobject.idle_add(self.gui.show)
         gtk.main()
