@@ -36,13 +36,11 @@ class IDManager(object):
 
     # ACCESSORS #
     def _set_id(self, v):
-        before_id = self._id
         if self._id > 0:
             self.__class__.del_id(self._id)
             self._id = self.__class__.get_id(v)
         else:
             self._id = self.__class__.get_id(v, strict=False)
-        # DEBUG PRINTING: # print '%s(%s) %d -> %d' % (self, self.__class__.ids, before_id, self._id)
 
     id = property(lambda self: self._id, _set_id)
 
@@ -70,21 +68,18 @@ class IDManager(object):
                 excepted. If the requested ID is already used, a IDUsedError
                 is raised. (Default: True)
             """
-        # DEBUG PRINTING: # print '%s(%d).ids = %s (req %d)' % (cls.__name__, cls.max_id, str(cls.ids), requested)
 
         if not requested is None and requested > 0:
             if requested not in cls.ids:
                 if requested > cls.max_id:
                     cls.max_id = requested
                 cls.ids.add(requested)
-                # DEBUG PRINTING: # print '%s(%d) <= %d' % (cls.__name__, cls.max_id, requested)
                 return requested
             elif strict:
                 raise IDUsedError(str(requested))
 
         cls.max_id += 1
         cls.ids.add(cls.max_id)
-        # DEBUG PRINTING: # print '%s(%d) <= *%d' % (cls.__name__, cls.max_id, cls.max_id)
         return cls.max_id
 
     @classmethod
