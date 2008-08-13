@@ -40,6 +40,8 @@ class LanguageDB(object):
 
     FILE_EXTENSION = 'xldb' # The normal extension of language database files.
 
+    cache = {}
+    """Used to cache the XML tree."""
     model_list_map = {
         'part_of_speech' : 'parts_of_speech',
         'root'           : 'roots',
@@ -260,6 +262,7 @@ class LanguageDB(object):
             @param filename: The full path to the file to load the language database from.
             """
         xmlroot = objectify.parse(open(filename, 'r')).getroot()
+        self.cache[xmlroot] = list(xmlroot.getiterator())
 
         # Sanity checking for basic language database structure...
         if xmlroot.tag != 'language_database':
@@ -294,6 +297,8 @@ class LanguageDB(object):
         # Fill self.root_hashes from self.roots_ids
         for root in self.roots_ids.values():
             self.root_hashes[hash(root.value)] = root
+
+        del self.cache[xmlroot]
 
     def save(self, filename=None):
         """Save the represented language database to the specified file.
