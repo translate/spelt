@@ -445,7 +445,7 @@ class EditArea(object):
             return
 
         self.current_sf.status = 'ignored'
-        self.gui.reload_database()
+        self.wordlist.next()
         self.gui.changes_made = True
 
     def __on_btn_mod_root_clicked(self, btn):
@@ -476,7 +476,7 @@ class EditArea(object):
         self.current_sf.status  = 'classified'
         self.current_sf.date    = datetime.datetime.now()
 
-        self.wordlist.refresh() # This will select the next word at the top of the word list
+        self.wordlist.next() # This will select the next word at the top of the word list
         self.gui.changes_made = True
 
     def __on_btn_reject_clicked(self, btn):
@@ -485,7 +485,7 @@ class EditArea(object):
             return
 
         self.current_sf.status = 'rejected'
-        self.gui.reload_database()
+        self.wordlist.next()
         self.gui.changes_made = True
 
     def __on_cmb_changed(self, combo, select_model):

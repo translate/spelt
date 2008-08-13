@@ -46,14 +46,27 @@ class WordList(object):
         self.glade_xml              = glade_xml
         self.gui                    = gui
         self.langdb                 = langdb
+        self.selected_iter          = None
         self.word_selected_handlers = []
 
         self.__init_widgets()
 
     # METHODS #
+    def next(self):
+        iter = self.store.get_iter_first()
+        if self.selected_iter is None:
+            return
+        self.store.remove(self.selected_iter)
+
+        self.selected_iter = self.store.get_iter_first()
+        if self.selected_iter is None:
+            return
+        self.treeview.get_selection().select_iter(self.selected_iter)
+        self.treeview.row_activated(self.store.get_path(self.selected_iter), self.treeview.get_column(0))
+
     def refresh(self, langdb=None):
         """Reload data from self.langdb database."""
-        if not langdb is None and isinstance(langdb, LanguageDB):
+        if langdb is not None and isinstance(langdb, LanguageDB):
             self.langdb = langdb
 
         if not self.langdb or not isinstance(self.langdb, LanguageDB):
@@ -77,6 +90,7 @@ class WordList(object):
         else:
             self.treeview.get_selection().select_iter(iter)
             self.treeview.row_activated(self.store.get_path(iter), self.treeview.get_column(0))
+            self.selected_iter = iter
 
     def __init_widgets(self):
         """Get and initialize widgets from the Glade object."""
@@ -102,8 +116,8 @@ class WordList(object):
 
     # SIGNAL HANDLERS #
     def __on_row_activated(self, treeview, path, col, store):
-        iter = store.get_iter(path)
-        model = store.get_value(iter, 0)
+        self.selected_iter = store.get_iter(path)
+        model = store.get_value(self.selected_iter, 0)
 
         for f in self.word_selected_handlers:
             if callable(f):

@@ -140,6 +140,9 @@ class Menu(object):
         if filename is None:
             return
 
+        if not filename.endswith('.xldb'):
+            filename = filename + '.xldb'
+
         if os.path.exists(filename) and not self.gui.prompt(_( 'File "%s" already exists.\n\nOverwrite?' % (filename) )):
             return
 
