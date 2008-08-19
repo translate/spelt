@@ -6,6 +6,6 @@ _GenericName=Word classifier
 _Comment=A tool to classify words from a language database according to their roots.
 TryExec=run_spelt
 Exec=run_spelt %f
-Icon=run_spelt
+Icon=spelt
 MimeType=application/x-language-database;text/x-language-database
 Categories=Development;Translation;GTK;
