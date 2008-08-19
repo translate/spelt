@@ -93,7 +93,7 @@ class DlgDBLoad(object):
             import getpass
         except ImportError, _e:
             return u""
-        return pwd.getpwnam(getpass.getuser())[4]
+        return pwd.getpwnam(getpass.getuser())[4].split(",")[0]
 
     def run(self):
         start_page = 0
