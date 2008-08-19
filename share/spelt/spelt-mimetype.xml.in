@@ -6,24 +6,12 @@ See: http://standards.freedesktop.org/shared-mime-info-spec/shared-mime-info-spe
 -->
 <mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
 
-  <mime-type type="text/x-language-database">
-	<sub-class-of type="text/xml"/>
-	<_comment>XML Language Database</_comment>
+  <mime-type type="application/x-spelt-language-database">
+    <sub-class-of type="application/xml"/>
+    <_comment>Spelt XML Language Database</_comment>
     <_acronym>XLDB</_acronym>
-    <_expanded-acronym>XML Language Database</_expanded-acronym>
     <glob pattern="*.xldb"/>
-	<magic priority="80">
-	  <magic value="&lt;language_database lang=" type="string" offset="0:0"/>
-    </magic>
-  </mime-type>
-
-  <mime-type type="application/x-language-database">
-	<sub-class-of type="application/xml"/>
-	<_comment>XML Language Database</_comment>
-    <_acronym>XLDB</_acronym>
-    <_expanded-acronym>XML Language Database</_expanded-acronym>
-    <glob pattern="*.xldb"/>
-	<magic priority="80">
+	<magic priority="50">
 	  <magic value="&lt;language_database lang=" type="string" offset="0:0"/>
     </magic>
   </mime-type>
