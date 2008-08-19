@@ -7,5 +7,5 @@ _Comment=A tool to classify words from a language database according to their ro
 TryExec=run_spelt
 Exec=run_spelt %f
 Icon=spelt
-MimeType=application/x-language-database;text/x-language-database
+MimeType=application/x-spelt-language-database;
 Categories=Development;Translation;GTK;
