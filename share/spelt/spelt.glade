@@ -21,7 +21,7 @@
                     <child>
                       <widget class="GtkImageMenuItem" id="mnu_open">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">gtk-open</property>
+                        <property name="label">gtk-open</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </widget>
@@ -29,7 +29,7 @@
                     <child>
                       <widget class="GtkImageMenuItem" id="mnu_save">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">gtk-save</property>
+                        <property name="label">gtk-save</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </widget>
@@ -37,7 +37,7 @@
                     <child>
                       <widget class="GtkImageMenuItem" id="mnu_saveas">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">gtk-save-as</property>
+                        <property name="label">gtk-save-as</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </widget>
@@ -50,7 +50,7 @@
                     <child>
                       <widget class="GtkImageMenuItem" id="mnu_quit">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">gtk-quit</property>
+                        <property name="label">gtk-quit</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </widget>
@@ -97,7 +97,7 @@
                     <child>
                       <widget class="GtkImageMenuItem" id="mnu_about">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">gtk-about</property>
+                        <property name="label">gtk-about</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </widget>
@@ -283,7 +283,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="label" translatable="yes">gtk-ok</property>
+                    <property name="label">gtk-ok</property>
                     <property name="use_stock">True</property>
                     <property name="response_id">0</property>
                   </widget>
@@ -600,7 +600,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="label" translatable="yes">gtk-cancel</property>
+                <property name="label">gtk-cancel</property>
                 <property name="use_stock">True</property>
                 <property name="response_id">1</property>
               </widget>
@@ -610,7 +610,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="label" translatable="yes">gtk-ok</property>
+                <property name="label">gtk-ok</property>
                 <property name="use_stock">True</property>
                 <property name="response_id">0</property>
               </widget>
@@ -706,7 +706,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="label" translatable="yes">gtk-open</property>
+                        <property name="label">gtk-open</property>
                         <property name="use_stock">True</property>
                         <property name="response_id">0</property>
                       </widget>
@@ -815,7 +815,7 @@ was not found automatically.</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="label" translatable="yes">gtk-media-next</property>
+                        <property name="label">gtk-media-next</property>
                         <property name="use_stock">True</property>
                         <property name="response_id">0</property>
                       </widget>
@@ -949,7 +949,7 @@ was not found automatically.</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
-                                <property name="label" translatable="yes">gtk-ok</property>
+                                <property name="label">gtk-ok</property>
                                 <property name="use_stock">True</property>
                                 <property name="response_id">0</property>
                               </widget>
