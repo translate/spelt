@@ -53,12 +53,13 @@ classifiers = [
 
 options = {
     'data_files': [
-        (TARGET_DATA_DIR,                        ['share/spelt/spelt.glade', 'share/spelt/spelt.ico']),
+        (TARGET_DATA_DIR,                        [path.join(SOURCE_DATA_DIR, fn) for fn in ('spelt.glade', 'spelt.ico', 'splash_logo.png')]),
+        (path.join('share', 'icons'),            [path.join(SOURCE_DATA_DIR, 'spelt.png')]),
         (path.join(TARGET_DATA_DIR, 'doc'),      ['README', 'TODO']),
-        (path.join(TARGET_DATA_DIR, 'examples'), ['share/spelt/examples/basic_english.xldb', 'share/spelt/examples/skeldb.xldb'])
+        (path.join(TARGET_DATA_DIR, 'examples'), [path.join(SOURCE_DATA_DIR, 'examples', fn) for fn in ('basic_english.xldb', 'skeldb.xldb')])
     ],
     'scripts': [
-        "run_spelt.py"
+        "bin/spelt"
     ],
     'packages': [
         "spelt",
@@ -120,7 +121,7 @@ SetupIconFile=%(icon_path)s
         print >> ofi, r'Source: "%s"; DestDir: "{app}\%s"; Flags: ignoreversion' % (fpath, os.path.dirname(fpath))
     print >> ofi, r'''
 [Icons]
-Name: "{group}\%(name)s "; Filename: "{app}\run_spelt.exe";
+Name: "{group}\%(name)s "; Filename: "{app}\spelt.exe";
 Name: "{group}\%(name)s (uninstall)"; Filename: "{uninstallexe}"
 Name: "{group}\Language Database Examples"; Filename: "{app}\share\spelt\examples"''' % {'name': name}
 
@@ -154,12 +155,12 @@ Root: HKCR; Subkey: "spelt_xldb"; ValueType: string; ValueName: ""; ValueData: "
 ;Icon to use in Explorer
 Root: HKCR; Subkey: "spelt_xldb\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\share\spelt\spelt.ico"
 ;The command to open the file
-Root: HKCR; Subkey: "spelt_xldb\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\run_spelt.exe"" ""%1"""'''
+Root: HKCR; Subkey: "spelt_xldb\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\spelt.exe"" ""%1"""'''
 
     # Show a "Launch Spelt" checkbox on the last installer screen
     print >> ofi, r'''
 [Run]
-Filename: "{app}\run_spelt.exe"; Description: "{cm:LaunchProgram,%(name)s}"; Flags: nowait postinstall skipifsilent''' % {'name': name}
+Filename: "{app}\spelt.exe"; Description: "{cm:LaunchProgram,%(name)s}"; Flags: nowait postinstall skipifsilent''' % {'name': name}
     print >> ofi
     ofi.close()
     return pathname
@@ -245,7 +246,7 @@ def add_win32_options(options):
         options.update({
             "windows": [
                 {
-                    'script': 'run_spelt.py',
+                    'script': 'bin/spelt',
                     'icon_resources': [(1, path.join(SOURCE_DATA_DIR, "spelt.ico"))],
                 }
             ],
