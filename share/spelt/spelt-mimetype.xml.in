@@ -11,8 +11,8 @@ See: http://standards.freedesktop.org/shared-mime-info-spec/shared-mime-info-spe
     <_comment>Spelt XML Language Database</_comment>
     <_acronym>XLDB</_acronym>
     <glob pattern="*.xldb"/>
-	<magic priority="50">
-	  <magic value="&lt;language_database lang=" type="string" offset="0:0"/>
+    <magic priority="50">
+      <match value="&lt;language_database lang=" type="string" offset="0:256"/>
     </magic>
   </mime-type>
 
