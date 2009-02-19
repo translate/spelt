@@ -155,7 +155,7 @@ class LanguageDB(object):
         if self.users_ids.has_key(usr.id):
             raise exceptions.DuplicateModelError(str(usr))
 
-        self.users[usr.id] = usr
+        self.users_ids[usr.id] = usr
         self.users.add(usr)
         self.xmlroot.users.append(usr.elem)
 
