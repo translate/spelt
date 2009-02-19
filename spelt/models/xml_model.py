@@ -106,6 +106,8 @@ class XMLModel(IDManager):
                 return
             self.elem.set(name, str(value))
         elif name in self.values:
+            if value is None:
+                value = u''
             setattr(self.elem, name, value)
 
         super(XMLModel, self).__setattr__(name, value)
