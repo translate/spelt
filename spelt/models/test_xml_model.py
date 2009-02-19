@@ -49,8 +49,8 @@ class TestXMLModel:
         """
         assert self.model.sex == 'male'
         assert self.model.race == 'chinese'
-        assert self.model.height == 182
-        assert self.model.weight == 70.5
+        assert self.model.height == '182'
+        assert self.model.weight == '70.5'
         assert self.model.notes == ''
 
     def test_to_xml(self):
@@ -63,8 +63,8 @@ class TestXMLModel:
 
         assert self.model.sex    == toroot.get('sex')
         assert self.model.race   == toroot.get('race')
-        assert self.model.height == toroot.height
-        assert self.model.weight == toroot.weight
+        assert float(self.model.height) == float(toroot.height)
+        assert float(self.model.weight) == float(toroot.weight)
         assert self.model.notes  == toroot.notes
 
 if __name__ == '__main__':

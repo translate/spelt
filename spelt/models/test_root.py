@@ -47,8 +47,8 @@ class TestRoot:
         now = str(int( time.mktime(datetime.now().timetuple()) ))
         # r.id not tested because it should be automagically determined by
         # the voodoo in IDManager
-        assert isinstance(r.value, objectify.NoneElement)
-        assert isinstance(r.remarks, objectify.NoneElement)
+        assert r.value   == u''
+        assert r.remarks == u''
         assert r.pos_id  == 0
         assert r.user_id == 0
         assert r.date    == now
@@ -81,7 +81,7 @@ class TestRoot:
         assert r1.date    == "1212555224"
 
         assert r2.value   == u'boom'
-        assert isinstance(r2.remarks, objectify.NoneElement)
+        assert r2.remarks == u''
         assert r2.id      == 2
         assert r2.pos_id  == 22
         assert r2.user_id == 222

@@ -57,9 +57,9 @@ class TestSource:
         assert s.id == 101
         assert s.date == now
         assert s.import_user_id == 2
-        assert isinstance(s.name, objectify.NoneElement)
-        assert isinstance(s.filename, objectify.NoneElement)
-        assert isinstance(s.description, objectify.NoneElement)
+        assert s.name == u''
+        assert s.filename == u''
+        assert s.description == u''
 
     def test_create_no_xml_values(self):
         """
