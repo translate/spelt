@@ -1,0 +1,6 @@
+# /
+/MANIFEST.in
+/build
+
+# General
+*.pyc
